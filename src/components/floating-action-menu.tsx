@@ -46,7 +46,7 @@ type Action = {
 const ACTIONS: Action[] = [
   {
     label: "Ubicación",
-    href: "/#contacto",
+    href: "/#sedes",
     icon: (p) => <MapPinIcon {...p} />,
     bg: "#0c0e0d",
   },

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { waLink } from "@/lib/utils";
 import { Faq } from "@/components/faq";
 import { Nosotros } from "@/components/nosotros";
+import { Contacto } from "@/components/contacto";
 
 type Cell =
   | { type: "image"; src: string; alt: string }
@@ -199,6 +200,8 @@ export default function Home() {
     <Nosotros />
 
     <Faq />
+
+    <Contacto />
     </>
   );
 }

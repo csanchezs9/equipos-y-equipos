@@ -10,7 +10,7 @@ const linkCls =
 
 export function Footer() {
   return (
-    <footer id="contacto" className="relative w-full overflow-hidden bg-cover bg-center py-20 md:py-32">
+    <footer id="sedes" className="relative w-full overflow-hidden bg-cover bg-center py-20 md:py-32">
       {/* Fondo en video */}
       <video
         className="absolute inset-0 h-full w-full object-cover"

@@ -69,7 +69,7 @@ const GROUPS: {
     links: [
       { label: "Cotizar por WhatsApp", href: COTIZAR, external: true },
       { label: "Llamar", href: "tel:+573113095760" },
-      { label: "Cómo llegar", href: "/#contacto" },
+      { label: "Cómo llegar", href: "/#sedes" },
     ],
   },
 ];
