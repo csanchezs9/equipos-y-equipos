@@ -1,0 +1,210 @@
+@import "tailwindcss";
+
+/* =========================================================
+   EQUIPOS Y EQUIPOS S.A.S — Design System
+   Light premium editorial industrial: papel blanco, azul del
+   logo + ambar de maquinaria (hazard) como acento, rejilla
+   tipo plano. Tipografia Space Grotesk apretada y pesada.
+   ========================================================= */
+
+@theme {
+  /* Base (claro) */
+  --color-ink: #ffffff;          /* fondo — papel */
+  --color-ink-2: #f5f6f2;        /* superficie elevada / secciones */
+  --color-ink-3: #ebece7;        /* cards / placeholders */
+  --color-line: #e2e4de;         /* bordes hairline */
+  --color-bone: #0c0e0d;         /* texto principal (casi negro) */
+  --color-mute: #6a716b;         /* texto secundario */
+  --color-paper: #f3f4f1;        /* tile para fotos de producto */
+
+  /* Marca — azul del wordmark (legible sobre blanco) */
+  --color-brand: #1665ad;        /* azul */
+  --color-brand-glow: #2b8fd9;   /* azul vivo — glows / hover */
+  --color-brand-deep: #0c3c66;   /* azul profundo */
+
+  /* Hazard — ambar/naranja maquinaria (acento del logo) */
+  --color-hazard: #e8821e;
+  --color-hazard-deep: #c8650a;
+
+  /* Fuentes (next/font como variables) */
+  --font-display: var(--font-space), system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Easing premium */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Container */
+  --spacing-gutter: clamp(1.25rem, 4vw, 4.5rem);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  label[for],
+  summary {
+    cursor: pointer;
+  }
+
+  html {
+    background: var(--color-ink);
+    color: var(--color-bone);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+
+  /* Lenis */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  ::selection {
+    background: var(--color-hazard);
+    color: #ffffff;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-ink-2);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-line);
+    border-radius: 0;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-hazard);
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 0.9;
+  }
+
+  /* Numeros / datos tabulares en mono */
+  .tnum {
+    font-family: var(--font-mono);
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  .container-x {
+    width: 100%;
+    margin-inline: auto;
+    max-width: 96rem;
+    padding-inline: var(--spacing-gutter);
+  }
+
+  /* Eyebrow sans — sin uppercase/tracking/mono */
+  .kicker {
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--color-brand);
+  }
+
+  /* Display fluido, apretado y pesado */
+  .display-xl {
+    font-size: clamp(2.75rem, 9.5vw, 11rem);
+    line-height: 0.86;
+    letter-spacing: -0.045em;
+    font-weight: 700;
+  }
+  .display-lg {
+    font-size: clamp(2.25rem, 6.5vw, 6.5rem);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    font-weight: 700;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Rejilla tipo plano para fondos */
+  .blueprint {
+    background-image:
+      linear-gradient(to right, color-mix(in srgb, var(--color-line) 80%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in srgb, var(--color-line) 80%, transparent) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+
+  /* Cinta hazard (rayas diagonales ambar/negro) */
+  .hazard-tape {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--color-hazard) 0 22px,
+      #161514 22px 44px
+    );
+  }
+
+  /* Tile claro para fotos de producto */
+  .tile-paper {
+    background: var(--color-paper);
+  }
+
+  /* Grano sutil */
+  .grain::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.022;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .glow-brand {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-brand) 40%, transparent),
+      0 0 60px -10px color-mix(in srgb, var(--color-brand-glow) 60%, transparent);
+  }
+
+  /* Reveal por scroll (GSAP enciende is-in) */
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* En mobile/tablet mostramos contenido siempre (reveal touch poco fiable) */
+@media (max-width: 1023px) {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-"] {
+    animation: none !important;
+  }
+}

@@ -1,0 +1,11 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+await p.goto('http://localhost:3000/', { waitUntil: 'load', timeout: 60000 });
+await p.waitForTimeout(1200);
+const f = await p.$('footer');
+await f.scrollIntoViewIfNeeded();
+await p.waitForTimeout(800);
+await f.screenshot({ path: 'C:/Users/USER/AppData/Local/Temp/claude/C--Users-USER-Documents-equiposyequipos/f15b6497-6661-49df-8a08-75ae27e04a58/scratchpad/footer.png' });
+await b.close();
+console.log('ok');
