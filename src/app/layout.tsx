@@ -4,7 +4,7 @@ import "./globals.css";
 import SmoothScroll from "@/components/smooth-scroll";
 import { FloatingNav } from "@/components/floating-nav";
 import { Footer } from "@/components/footer";
-import { WhatsAppFab } from "@/components/whatsapp-fab";
+import { FloatingActionMenu } from "@/components/floating-action-menu";
 import { JsonLd } from "@/components/json-ld";
 import {
   organizationSchema,
@@ -104,7 +104,7 @@ export default function RootLayout({
           <FloatingNav />
           <main className="overflow-x-hidden">{children}</main>
           <Footer />
-          <WhatsAppFab />
+          <FloatingActionMenu />
         </SmoothScroll>
       </body>
     </html>

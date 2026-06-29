@@ -51,29 +51,43 @@ function MenuToggle({ open }: { open: boolean }) {
   );
 }
 
-const cardVariants: Variants = {
+const GROUPS: {
+  label: string;
+  links: { label: string; href: string; external?: boolean }[];
+}[] = [
+  {
+    label: "Navegar",
+    links: [
+      { label: "Inicio", href: "/" },
+      { label: "Equipos", href: "/equipos" },
+      { label: "Nosotros", href: "/#nosotros" },
+      { label: "Preguntas frecuentes", href: "/#faq" },
+    ],
+  },
+  {
+    label: "Contacto",
+    links: [
+      { label: "Cotizar por WhatsApp", href: COTIZAR, external: true },
+      { label: "Llamar", href: "tel:+573113095760" },
+      { label: "Cómo llegar", href: "/#contacto" },
+    ],
+  },
+];
+
+const menuVariants: Variants = {
   closed: {
     opacity: 0,
-    y: -8,
-    scale: 0.96,
-    transition: { duration: 0.2, ease: [0.7, 0, 0.84, 0] },
+    transition: { duration: 0.25, ease: [0.7, 0, 0.84, 0], when: "afterChildren" },
   },
   open: {
     opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      duration: 0.35,
-      ease: [0.16, 1, 0.3, 1],
-      staggerChildren: 0.05,
-      delayChildren: 0.08,
-    },
+    transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.04, delayChildren: 0.1 },
   },
 };
 
 const itemVariants: Variants = {
-  closed: { y: 8, opacity: 0 },
-  open: { y: 0, opacity: 1, transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] } },
+  closed: { y: 18, opacity: 0, transition: { duration: 0.2 } },
+  open: { y: 0, opacity: 1, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
 };
 
 export function FloatingNav() {
@@ -166,71 +180,55 @@ export function FloatingNav() {
         </nav>
       </div>
 
-      {/* Menú compacto (dropdown) */}
+      {/* Menú fullscreen (estilo Linear) */}
       <AnimatePresence>
         {open ? (
-          <div className="sm:hidden">
-            {/* click-catcher */}
-            <motion.button
-              type="button"
-              aria-label="Cerrar menú"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setOpen(false)}
-              className="fixed inset-0 z-[55] cursor-default bg-neutral-950/10 backdrop-blur-[2px]"
-            />
-
-            <motion.div
-              key="card"
-              variants={cardVariants}
-              initial="closed"
-              animate="open"
-              exit="closed"
-              style={{ originY: 0 }}
-              className="fixed left-1/2 top-[84px] z-[65] w-[min(88vw,19rem)] -translate-x-1/2 overflow-hidden rounded-2xl border border-neutral-200 bg-white p-2 shadow-xl"
-            >
-              {LINKS.map((l) => (
-                <motion.div key={l.label} variants={itemVariants}>
-                  <Link
-                    href={l.href}
-                    onClick={() => setOpen(false)}
-                    className="group flex items-center justify-between rounded-xl px-4 py-3 text-base font-medium text-neutral-900 transition-colors hover:bg-neutral-50"
+          <motion.div
+            key="menu"
+            variants={menuVariants}
+            initial="closed"
+            animate="open"
+            exit="closed"
+            className="fixed inset-0 z-[60] overflow-y-auto bg-white sm:hidden"
+          >
+            <div className="flex min-h-full flex-col px-7 pb-12 pt-28">
+              {GROUPS.map((g) => (
+                <div key={g.label} className="mb-9">
+                  <motion.p
+                    variants={itemVariants}
+                    className="mb-3 text-sm font-medium text-neutral-400"
                   >
-                    {l.label}
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      aria-hidden
-                      className="text-neutral-300 transition-all group-hover:translate-x-0.5 group-hover:text-neutral-500"
-                    >
-                      <path
-                        d="M9 6l6 6-6 6"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </Link>
-                </motion.div>
+                    {g.label}
+                  </motion.p>
+                  <div className="flex flex-col">
+                    {g.links.map((l) => (
+                      <motion.div key={l.label} variants={itemVariants}>
+                        {l.external ? (
+                          <a
+                            href={l.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => setOpen(false)}
+                            className="block py-2 font-sans text-3xl font-semibold tracking-tight text-neutral-950 transition-colors hover:text-brand"
+                          >
+                            {l.label}
+                          </a>
+                        ) : (
+                          <Link
+                            href={l.href}
+                            onClick={() => setOpen(false)}
+                            className="block py-2 font-sans text-3xl font-semibold tracking-tight text-neutral-950 transition-colors hover:text-brand"
+                          >
+                            {l.label}
+                          </Link>
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
               ))}
-
-              <motion.div variants={itemVariants} className="p-2 pt-1">
-                <a
-                  href={COTIZAR}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setOpen(false)}
-                  className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-neutral-900 px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-900/90"
-                >
-                  Cotizar por WhatsApp
-                </a>
-              </motion.div>
-            </motion.div>
-          </div>
+            </div>
+          </motion.div>
         ) : null}
       </AnimatePresence>
     </>

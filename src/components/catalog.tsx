@@ -213,7 +213,7 @@ export function Catalog() {
                     </div>
 
                     <div className="flex flex-1 flex-col p-4">
-                      <h3 className="font-sans text-sm font-medium leading-snug text-neutral-950">
+                      <h3 className="mb-4 font-sans text-sm font-medium leading-snug text-neutral-950">
                         {p.name}
                       </h3>
                       <a
@@ -222,7 +222,7 @@ export function Catalog() {
                         )}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-4 inline-flex h-9 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-md bg-neutral-900 px-3 text-sm font-medium text-white transition-colors hover:bg-neutral-900/90"
+                        className="mt-auto inline-flex h-9 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-md bg-neutral-900 px-3 text-sm font-medium text-white transition-colors hover:bg-neutral-900/90"
                       >
                         Cotizar
                       </a>
