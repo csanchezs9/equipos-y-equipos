@@ -47,7 +47,22 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    lenis?.scrollTo(0, { immediate: true });
+    // Si la URL trae hash (#contacto, #faq…), scrollea a esa sección al
+    // cargar/cambiar de ruta. Si no, arranca arriba.
+    const hash = window.location.hash;
+    let hashTimer: number | undefined;
+    if (hash && document.querySelector(hash)) {
+      lenis?.scrollTo(0, { immediate: true });
+      const goToHash = () => {
+        const el = document.querySelector(hash);
+        if (el) lenis?.scrollTo(el as HTMLElement, { offset: -90 });
+      };
+      // Espera a que imágenes/layout asienten para no caer corto.
+      hashTimer = window.setTimeout(goToHash, 350);
+      window.addEventListener("load", goToHash, { once: true });
+    } else {
+      lenis?.scrollTo(0, { immediate: true });
+    }
 
     const ctx = gsap.context(() => {
       gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) => {
@@ -144,6 +159,7 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     return () => {
       window.removeEventListener("load", onLoad);
       window.clearTimeout(t);
+      if (hashTimer) window.clearTimeout(hashTimer);
       ctx.revert();
     };
   }, [pathname]);
