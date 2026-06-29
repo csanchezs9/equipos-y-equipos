@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { waLink } from "@/lib/utils";
+import { getLenis } from "@/components/smooth-scroll";
 
 const LINKS = [
   { label: "Inicio", href: "/" },
@@ -120,6 +121,22 @@ export function FloatingNav() {
 
   const show = !isHome || scrolled;
 
+  // Anchors (#contacto, #faq…): en home, scroll suave con Lenis.
+  function onNav(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
+    setOpen(false);
+    if (!href.includes("#")) return;
+    const hash = href.slice(href.indexOf("#"));
+    if (isHome) {
+      const el = document.querySelector(hash);
+      if (el) {
+        e.preventDefault();
+        const lenis = getLenis();
+        if (lenis) lenis.scrollTo(el as HTMLElement, { offset: -90 });
+        else el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  }
+
   return (
     <>
       <div
@@ -150,6 +167,7 @@ export function FloatingNav() {
               <Link
                 key={l.label}
                 href={l.href}
+                onClick={(e) => onNav(e, l.href)}
                 className="text-xs font-medium text-neutral-900 transition-colors hover:text-brand"
               >
                 {l.label}
@@ -216,7 +234,7 @@ export function FloatingNav() {
                         ) : (
                           <Link
                             href={l.href}
-                            onClick={() => setOpen(false)}
+                            onClick={(e) => onNav(e, l.href)}
                             className="block py-2 font-sans text-3xl font-semibold tracking-tight text-neutral-950 transition-colors hover:text-brand"
                           >
                             {l.label}
