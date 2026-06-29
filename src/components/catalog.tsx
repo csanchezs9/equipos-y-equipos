@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { AnimatePresence, motion } from "framer-motion";
 import { categories, products } from "@/data/catalog";
 import { waLink } from "@/lib/utils";
 
@@ -58,6 +59,7 @@ function SearchIcon({ className }: { className?: string }) {
 export function Catalog() {
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState<string>("all");
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const blocks = useMemo(() => {
     const q = norm(query.trim());
@@ -129,27 +131,122 @@ export function Catalog() {
         </div>
 
         {/* Filtros macro */}
-        <div className="mt-6 -mx-6 overflow-x-auto px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="flex w-max gap-2 border-b border-neutral-200 pb-0">
-            {tabs.map((t) => {
-              const on = group === t;
-              const label = t === "all" ? "Todos" : t;
-              return (
+        {/* Mobile: dropdown custom */}
+        <div className="relative mt-6 sm:hidden">
+          <button
+            type="button"
+            onClick={() => setFilterOpen((v) => !v)}
+            aria-expanded={filterOpen}
+            className="flex h-12 w-full items-center justify-between rounded-lg border border-neutral-200 bg-white px-4 text-base font-medium text-neutral-900 shadow-sm transition-colors hover:border-neutral-300"
+          >
+            <span>{group === "all" ? "Todas las líneas" : group}</span>
+            <motion.svg
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden
+              animate={{ rotate: filterOpen ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+              className="h-5 w-5 text-neutral-400"
+            >
+              <path
+                d="M7 10l5 5 5-5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </motion.svg>
+          </button>
+
+          <AnimatePresence>
+            {filterOpen ? (
+              <>
                 <button
-                  key={t}
                   type="button"
-                  onClick={() => setGroup(t)}
-                  className={`relative shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                    on
-                      ? "bg-neutral-900 text-white"
-                      : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
+                  aria-label="Cerrar filtro"
+                  onClick={() => setFilterOpen(false)}
+                  className="fixed inset-0 z-20 cursor-default"
+                />
+                <motion.ul
+                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ originY: 0 }}
+                  className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-neutral-200 bg-white p-1.5 shadow-xl"
+                >
+                  {tabs.map((t) => {
+                    const on = group === t;
+                    return (
+                      <li key={t}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setGroup(t);
+                            setFilterOpen(false);
+                          }}
+                          className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-base font-medium transition-colors ${
+                            on
+                              ? "bg-neutral-100 text-neutral-900"
+                              : "text-neutral-600 hover:bg-neutral-50"
+                          }`}
+                        >
+                          {t === "all" ? "Todas las líneas" : t}
+                          {on ? (
+                            <svg
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              aria-hidden
+                              className="h-4 w-4 text-neutral-900"
+                            >
+                              <path
+                                d="M5 12l5 5L20 7"
+                                stroke="currentColor"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          ) : null}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </motion.ul>
+              </>
+            ) : null}
+          </AnimatePresence>
+        </div>
+
+        {/* Desktop: segmented control con pastilla deslizante */}
+        <div className="mt-6 hidden flex-wrap gap-1 rounded-full bg-neutral-100 p-1 sm:inline-flex">
+          {tabs.map((t) => {
+            const on = group === t;
+            const label = t === "all" ? "Todos" : t;
+            return (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setGroup(t)}
+                className="relative whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors"
+              >
+                {on ? (
+                  <motion.span
+                    layoutId="filterPill"
+                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                    className="absolute inset-0 rounded-full bg-neutral-900"
+                  />
+                ) : null}
+                <span
+                  className={`relative z-10 ${
+                    on ? "text-white" : "text-neutral-500 hover:text-neutral-900"
                   }`}
                 >
                   {label}
-                </button>
-              );
-            })}
-          </div>
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
