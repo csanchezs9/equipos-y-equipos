@@ -319,38 +319,55 @@ export function Catalog() {
 
               <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-5">
                 {items.map((p) => (
-                  <article
+                  <a
                     key={p.id}
-                    className="group flex flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white transition-shadow hover:shadow-md"
+                    href={waLink(
+                      `Hola Equipos y Equipos, quiero cotizar el alquiler de: ${p.name}.`
+                    )}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-neutral-300 hover:shadow-lg"
                   >
-                    <div className="relative aspect-square overflow-hidden bg-neutral-50">
+                    <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-neutral-50 via-neutral-100 to-neutral-200">
+                      {/* halo sutil tras el equipo */}
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,white,transparent_70%)] opacity-60" />
                       {p.image ? (
                         <Image
                           src={p.image}
                           alt={p.name}
                           fill
                           sizes="(max-width: 768px) 50vw, 25vw"
-                          className="object-contain p-5 transition-transform duration-300 group-hover:scale-105"
+                          className="relative object-contain p-6 drop-shadow-sm transition-transform duration-500 [transition-timing-function:var(--ease-out-expo)] group-hover:scale-110"
                         />
                       ) : null}
                     </div>
 
                     <div className="flex flex-1 flex-col p-4">
-                      <h3 className="mb-4 font-sans text-sm font-medium leading-snug text-neutral-950">
+                      <h3 className="font-sans text-sm font-medium leading-snug text-neutral-950">
                         {p.name}
                       </h3>
-                      <a
-                        href={waLink(
-                          `Hola Equipos y Equipos, quiero cotizar el alquiler de: ${p.name}.`
-                        )}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-auto inline-flex h-9 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-md bg-neutral-900 px-3 text-sm font-medium text-white transition-colors hover:bg-neutral-900/90"
-                      >
+                      <p className="mt-1 text-xs text-neutral-400">{cat.name}</p>
+                      <span className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-medium text-neutral-400 transition-colors group-hover:text-neutral-900">
                         Cotizar
-                      </a>
+                        <svg
+                          width="15"
+                          height="15"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          aria-hidden
+                          className="transition-all duration-300 group-hover:translate-x-1 group-hover:text-[#F58226]"
+                        >
+                          <path
+                            d="M5 12h14M13 6l6 6-6 6"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </span>
                     </div>
-                  </article>
+                  </a>
                 ))}
               </div>
             </div>
