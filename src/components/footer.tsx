@@ -38,7 +38,7 @@ export function Footer() {
                 height={136}
                 className="h-20 w-auto"
               />
-              <p className="mt-4 mb-6 max-w-xs text-xs leading-relaxed text-neutral-500">
+              <p className="mt-4 mb-6 max-w-xs text-sm leading-relaxed text-neutral-500">
                 Alquiler de equipos para la construcción. Maquinaria mantenida,
                 entrega en obra y soporte técnico en Medellín, Pereira y Armenia.
               </p>
@@ -56,10 +56,10 @@ export function Footer() {
 
             {/* Equipos */}
             <div>
-              <h3 className="mb-4 text-xs font-medium uppercase tracking-wider text-neutral-900">
+              <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-neutral-900">
                 Equipos
               </h3>
-              <ul className="space-y-2.5 text-sm">
+              <ul className="space-y-3 text-sm">
                 {COL_A.map((c) => (
                   <li key={c.slug}>
                     <a
@@ -79,10 +79,10 @@ export function Footer() {
 
             {/* Más líneas */}
             <div>
-              <h3 className="mb-4 text-xs font-medium uppercase tracking-wider text-neutral-900">
+              <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-neutral-900">
                 Más líneas
               </h3>
-              <ul className="space-y-2.5 text-sm">
+              <ul className="space-y-3 text-sm">
                 {COL_B.map((c) => (
                   <li key={c.slug}>
                     <a
@@ -102,10 +102,10 @@ export function Footer() {
 
             {/* Contacto */}
             <div>
-              <h3 className="mb-4 text-xs font-medium uppercase tracking-wider text-neutral-900">
+              <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-neutral-900">
                 Contacto
               </h3>
-              <ul className="space-y-2.5 text-sm">
+              <ul className="space-y-3 text-sm">
                 <li>
                   <a href="tel:+573113095760" className={linkCls}>
                     {WHATSAPP_DISPLAY}
