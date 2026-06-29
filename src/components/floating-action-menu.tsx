@@ -157,33 +157,27 @@ export function FloatingActionMenu() {
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? "Cerrar menú de contacto" : "Abrir menú de contacto"}
         aria-expanded={open}
-        className="flex h-14 w-14 items-center justify-center rounded-full border border-neutral-200 text-white shadow-2xl transition-all duration-300 [transition-timing-function:var(--ease-out-expo)] hover:-translate-y-1"
+        className="relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-2xl text-white shadow-2xl ring-1 ring-black/5 transition-all duration-300 [transition-timing-function:var(--ease-out-expo)] hover:-translate-y-1"
         style={{ background: open ? "#0c0e0d" : "#ffffff" }}
       >
-        <motion.span
-          animate={{ rotate: open ? 135 : 0 }}
-          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="flex items-center justify-center"
-        >
-          {open ? (
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden>
-              <path
-                d="M12 5v14M5 12h14"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          ) : (
-            <Image
-              src="/brand/ee-mark-croped.png"
-              alt="Equipos y Equipos"
-              width={860}
-              height={520}
-              className="h-7 w-auto"
+        {open ? (
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+              d="M12 5v14M5 12h14"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
             />
-          )}
-        </motion.span>
+          </svg>
+        ) : (
+          <Image
+            src="/brand/ee-fab.png"
+            alt="Equipos y Equipos"
+            fill
+            sizes="56px"
+            className="object-cover"
+          />
+        )}
       </button>
     </div>
   );
