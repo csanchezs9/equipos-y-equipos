@@ -92,67 +92,69 @@ export function Catalog() {
     <section className="bg-white text-neutral-900">
       {/* Header */}
       <div className="mx-auto max-w-6xl px-6 pt-28 md:pt-32">
-        <div className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
-          <div className="flex flex-col items-start text-left">
-            <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">
-              Catálogo
-            </span>
-            <h1 className="mt-5 font-sans text-4xl font-semibold tracking-normal text-neutral-950 md:text-5xl md:leading-tight">
-              Todos los equipos, listos para tu obra
-            </h1>
-            <p className="mt-5 text-base leading-7 text-neutral-500">
-              {products.length} equipos mantenidos y listos para despacho en
-              Medellín, Pereira y Armenia. Busca el que necesitas y cotiza por
-              WhatsApp.
-            </p>
-          </div>
+        {/* Banner inmersivo */}
+        <div className="relative flex min-h-[440px] flex-col justify-end overflow-hidden rounded-3xl md:min-h-[520px]">
+          <Image
+            src="/equipos/titulo/ej-yao-D46mXLsQRJw-unsplash.webp"
+            alt="Grúas torre en obra al atardecer"
+            fill
+            sizes="(max-width: 1152px) 100vw, 1152px"
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/90 via-neutral-950/45 to-neutral-950/20" />
 
-          <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-neutral-100 md:aspect-[4/3]">
-            <Image
-              src="/equipos/titulo/ej-yao-D46mXLsQRJw-unsplash.webp"
-              alt="Grúas torre en obra al atardecer"
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover"
-              priority
-            />
-          </div>
-        </div>
+          <div className="relative flex flex-col gap-7 p-7 md:p-12">
+            <div className="max-w-2xl">
+              <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                Catálogo
+              </span>
+              <h1 className="mt-5 font-sans text-4xl font-semibold tracking-normal text-white md:text-5xl md:leading-tight">
+                Todos los equipos, listos para tu obra
+              </h1>
+              <p className="mt-4 max-w-xl text-base leading-7 text-white/70">
+                {products.length} equipos mantenidos y listos para despacho en
+                Medellín, Pereira y Armenia. Busca el que necesitas y cotiza por
+                WhatsApp.
+              </p>
+            </div>
 
-        {/* Buscador */}
-        <div className="mt-10 max-w-xl">
-          <div className="group relative flex items-center rounded-full border border-neutral-200 bg-white shadow-sm transition-all duration-200 focus-within:border-neutral-300 focus-within:shadow-md focus-within:ring-4 focus-within:ring-neutral-900/5">
-            <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400 transition-colors group-focus-within:text-neutral-600" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar equipo o línea…"
-              className="w-full rounded-full bg-transparent py-3.5 pl-12 pr-12 text-base text-neutral-900 outline-none placeholder:text-neutral-400"
-            />
-            <AnimatePresence>
-              {query ? (
-                <motion.button
-                  type="button"
-                  initial={{ opacity: 0, scale: 0.6 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.6 }}
-                  transition={{ duration: 0.15 }}
-                  onClick={() => setQuery("")}
-                  aria-label="Limpiar búsqueda"
-                  className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-100 text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-neutral-900"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-                    <path
-                      d="M6 6l12 12M18 6L6 18"
-                      stroke="currentColor"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </motion.button>
-              ) : null}
-            </AnimatePresence>
+            {/* Buscador flotante */}
+            <div className="max-w-xl">
+              <div className="group relative flex items-center rounded-full border border-white/10 bg-white shadow-2xl transition-all duration-200 focus-within:ring-4 focus-within:ring-white/20">
+                <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400 transition-colors group-focus-within:text-neutral-600" />
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Buscar equipo o línea…"
+                  className="w-full rounded-full bg-transparent py-3.5 pl-12 pr-12 text-base text-neutral-900 outline-none placeholder:text-neutral-400"
+                />
+                <AnimatePresence>
+                  {query ? (
+                    <motion.button
+                      type="button"
+                      initial={{ opacity: 0, scale: 0.6 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.6 }}
+                      transition={{ duration: 0.15 }}
+                      onClick={() => setQuery("")}
+                      aria-label="Limpiar búsqueda"
+                      className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-100 text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-neutral-900"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+                        <path
+                          d="M6 6l12 12M18 6L6 18"
+                          stroke="currentColor"
+                          strokeWidth="2.2"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </motion.button>
+                  ) : null}
+                </AnimatePresence>
+              </div>
+            </div>
           </div>
         </div>
 
