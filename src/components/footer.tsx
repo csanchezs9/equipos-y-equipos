@@ -6,7 +6,7 @@ const COL_A = categories.slice(0, 6);
 const COL_B = categories.slice(6, 12);
 
 const linkCls =
-  "border-b border-transparent text-sm text-neutral-500 transition-all duration-300 ease-in-out hover:border-neutral-900 hover:text-neutral-900";
+  "border-b border-transparent text-sm text-neutral-500 transition-all duration-300 ease-in-out hover:border-[#F58226] hover:text-neutral-900";
 
 export function Footer() {
   return (
