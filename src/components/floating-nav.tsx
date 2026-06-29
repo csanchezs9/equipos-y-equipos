@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { waLink } from "@/lib/utils";
@@ -93,6 +93,7 @@ const itemVariants: Variants = {
 
 export function FloatingNav() {
   const pathname = usePathname();
+  const router = useRouter();
   const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -121,19 +122,24 @@ export function FloatingNav() {
 
   const show = !isHome || scrolled;
 
-  // Anchors (#contacto, #faq…): en home, scroll suave con Lenis.
+  // Anchors (#contacto, #faq…). En home: scroll suave con Lenis. Cross-page:
+  // guarda la intención en sessionStorage y navega (lo consume el home al
+  // montar). Sin hash pegado en la URL para no re-disparar después.
   function onNav(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
     setOpen(false);
     if (!href.includes("#")) return;
+    e.preventDefault();
     const hash = href.slice(href.indexOf("#"));
     if (isHome) {
       const el = document.querySelector(hash);
+      const lenis = getLenis();
       if (el) {
-        e.preventDefault();
-        const lenis = getLenis();
         if (lenis) lenis.scrollTo(el as HTMLElement, { offset: -90 });
         else el.scrollIntoView({ behavior: "smooth", block: "start" });
       }
+    } else {
+      sessionStorage.setItem("scrollTarget", hash);
+      router.push("/");
     }
   }
 

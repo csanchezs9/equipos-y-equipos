@@ -47,21 +47,25 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // Si la URL trae hash (#contacto, #faq…), scrollea a esa sección al
-    // cargar/cambiar de ruta. Si no, arranca arriba.
-    const hash = window.location.hash;
+    // Intención de scroll cross-page (sessionStorage, un solo uso). La pone el
+    // navbar al saltar desde otra ruta a un ancla del home. Si no hay, arranca
+    // arriba.
+    lenis?.scrollTo(0, { immediate: true });
+    const target = sessionStorage.getItem("scrollTarget");
     let hashTimer: number | undefined;
-    if (hash && document.querySelector(hash)) {
-      lenis?.scrollTo(0, { immediate: true });
+    let onHashLoad: (() => void) | undefined;
+    if (target && document.querySelector(target)) {
+      sessionStorage.removeItem("scrollTarget");
       const goToHash = () => {
-        const el = document.querySelector(hash);
+        const el = document.querySelector(target);
         if (el) lenis?.scrollTo(el as HTMLElement, { offset: -90 });
       };
+      onHashLoad = goToHash;
       // Espera a que imágenes/layout asienten para no caer corto.
       hashTimer = window.setTimeout(goToHash, 350);
-      window.addEventListener("load", goToHash, { once: true });
+      window.addEventListener("load", goToHash);
     } else {
-      lenis?.scrollTo(0, { immediate: true });
+      sessionStorage.removeItem("scrollTarget");
     }
 
     const ctx = gsap.context(() => {
@@ -160,6 +164,7 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       window.removeEventListener("load", onLoad);
       window.clearTimeout(t);
       if (hashTimer) window.clearTimeout(hashTimer);
+      if (onHashLoad) window.removeEventListener("load", onHashLoad);
       ctx.revert();
     };
   }, [pathname]);
