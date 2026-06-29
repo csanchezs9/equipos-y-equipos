@@ -1,5 +1,8 @@
 import Image from "next/image";
-import { WHATSAPP_DISPLAY, waLink } from "@/lib/utils";
+import Link from "next/link";
+import { waLink } from "@/lib/utils";
+import { Faq } from "@/components/faq";
+import { Nosotros } from "@/components/nosotros";
 
 type Cell =
   | { type: "image"; src: string; alt: string }
@@ -95,10 +98,10 @@ export default function Home() {
               Cotizar por WhatsApp
             </a>
             <a
-              href="tel:+573113095760"
+              href="/equipos"
               className="inline-flex h-10 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-neutral-200 bg-white px-2.5 text-sm font-medium text-neutral-900 shadow-sm transition-colors hover:bg-neutral-100 sm:w-auto"
             >
-              {WHATSAPP_DISPLAY}
+              Ver equipos
             </a>
           </div>
         </div>
@@ -183,19 +186,19 @@ export default function Home() {
         </div>
 
         <div className="mt-12 flex justify-center">
-          <a
-            href={waLink(
-              "Hola Equipos y Equipos, quiero ver todos los equipos disponibles."
-            )}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/equipos"
             className="inline-flex h-11 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-neutral-200 bg-white px-6 text-sm font-medium text-neutral-900 shadow-sm transition-colors hover:bg-neutral-50"
           >
             Ver todos los equipos
-          </a>
+          </Link>
         </div>
       </div>
     </section>
+
+    <Nosotros />
+
+    <Faq />
     </>
   );
 }

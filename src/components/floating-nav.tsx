@@ -1,24 +1,31 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { waLink } from "@/lib/utils";
 
 const LINKS = [
-  { label: "Inicio", href: "#top" },
-  { label: "Equipos", href: "#equipos" },
-  { label: "Contacto", href: "#contacto" },
+  { label: "Inicio", href: "/" },
+  { label: "Equipos", href: "/equipos" },
+  { label: "Contacto", href: "/#contacto" },
 ];
 
 export function FloatingNav() {
-  const [show, setShow] = useState(false);
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setShow(window.scrollY > 600);
+    const onScroll = () => setScrolled(window.scrollY > 600);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // En home aparece tras scrollear el hero; fuera de home, siempre visible.
+  const show = !isHome || scrolled;
 
   return (
     <div
@@ -29,7 +36,7 @@ export function FloatingNav() {
       }`}
     >
       <nav className="flex items-center gap-5 rounded-b-xl border border-t-0 border-neutral-200 bg-white px-5 py-1.5 shadow-sm">
-        <a href="#top" aria-label="Equipos y Equipos — inicio" className="shrink-0">
+        <Link href="/" aria-label="Equipos y Equipos — inicio" className="shrink-0">
           <Image
             src="/brand/ee-mark.png"
             alt="Equipos y Equipos"
@@ -37,17 +44,17 @@ export function FloatingNav() {
             height={1024}
             className="h-16 w-auto"
           />
-        </a>
+        </Link>
 
         <div className="hidden items-center gap-6 sm:flex">
           {LINKS.map((l) => (
-            <a
+            <Link
               key={l.label}
               href={l.href}
               className="text-xs font-medium text-neutral-900 transition-colors hover:text-brand"
             >
               {l.label}
-            </a>
+            </Link>
           ))}
         </div>
 
