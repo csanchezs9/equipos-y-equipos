@@ -80,11 +80,15 @@ const GROUPS: {
 const menuVariants: Variants = {
   closed: {
     opacity: 0,
+    scale: 0.96,
+    y: -10,
     transition: { duration: 0.25, ease: [0.7, 0, 0.84, 0], when: "afterChildren" },
   },
   open: {
     opacity: 1,
-    transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.045, delayChildren: 0.08 },
+    scale: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.045, delayChildren: 0.1 },
   },
 };
 
@@ -98,10 +102,17 @@ export function FloatingNav() {
   const router = useRouter();
   const isHome = pathname === "/";
   const [scrolled, setScrolled] = useState(false);
+  const [condensed, setCondensed] = useState(false);
   const [open, setOpen] = useState(false);
 
+  // Isla reactiva: aparece tras 600px y se "condensa" (más sólida y
+  // compacta) al seguir bajando, en vez de solo aparecer/desaparecer.
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 600);
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 600);
+      setCondensed(y > 740);
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -154,7 +165,13 @@ export function FloatingNav() {
           show ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-4 opacity-0"
         }`}
       >
-        <nav className="flex h-14 w-auto max-w-[calc(100%-1.25rem)] items-center gap-2.5 rounded-full border border-neutral-200/70 bg-white/85 pl-5 pr-2 shadow-md shadow-neutral-900/5 ring-1 ring-white/50 backdrop-blur-xl sm:h-15 sm:gap-3 sm:pl-6">
+        <nav
+          className={`flex w-auto max-w-[calc(100%-1.25rem)] items-center gap-2.5 rounded-full border border-neutral-200/70 pl-5 pr-2 ring-1 ring-white/50 backdrop-blur-xl transition-all duration-300 [transition-timing-function:var(--ease-out-expo)] sm:gap-3 sm:pl-6 ${
+            condensed
+              ? "h-13 bg-white/90 shadow-lg shadow-neutral-900/10 sm:h-14"
+              : "h-14 bg-white/75 shadow-md shadow-neutral-900/5 sm:h-15"
+          }`}
+        >
           {/* Logo a la izquierda */}
           <Link
             href="/"
@@ -220,6 +237,7 @@ export function FloatingNav() {
             initial="closed"
             animate="open"
             exit="closed"
+            style={{ transformOrigin: "top center" }}
             className="fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-white sm:hidden"
           >
             {/* halo de marca arriba */}
