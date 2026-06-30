@@ -147,69 +147,68 @@ export function FloatingNav() {
 
   return (
     <>
-      {/* Barra fija de ancho completo. Respeta la safe-area del iPhone
-          (Dynamic Island / notch) con el padding-top env(). */}
+      {/* Isla flotante centrada. Baja un poco con pt env() para librar la
+          Dynamic Island / notch del iPhone sin pegarse al borde. */}
       <header
-        className={`fixed inset-x-0 top-0 z-[70] transition-all duration-500 [transition-timing-function:var(--ease-out-expo)] ${
-          show ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-full opacity-0"
+        className={`fixed inset-x-0 top-0 z-[70] flex justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.6rem)] transition-all duration-500 [transition-timing-function:var(--ease-out-expo)] sm:px-4 sm:pt-[calc(env(safe-area-inset-top)+0.9rem)] ${
+          show ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-4 opacity-0"
         }`}
       >
-        <div className="border-b border-neutral-200/70 bg-white/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
-          <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:h-16 sm:px-6">
-            {/* Logo fijo a la izquierda */}
-            <Link
-              href="/"
-              aria-label="Equipos y Equipos — inicio"
-              className="shrink-0"
-              onClick={() => setOpen(false)}
+        <nav className="flex h-14 w-auto max-w-[calc(100%-1.25rem)] items-center gap-2.5 rounded-full border border-neutral-200/70 bg-white/85 pl-5 pr-2 shadow-md shadow-neutral-900/5 ring-1 ring-white/50 backdrop-blur-xl sm:h-15 sm:gap-3 sm:pl-6">
+          {/* Logo a la izquierda */}
+          <Link
+            href="/"
+            aria-label="Equipos y Equipos — inicio"
+            className="shrink-0"
+            onClick={() => setOpen(false)}
+          >
+            <Image
+              src="/brand/ee-mark.png"
+              alt="Equipos y Equipos"
+              width={1536}
+              height={1024}
+              className="h-8 w-auto sm:h-9"
+              priority
+            />
+          </Link>
+
+          {/* Links centro (desktop) */}
+          <div className="hidden items-center gap-6 pl-2 sm:flex">
+            {LINKS.map((l) => (
+              <Link
+                key={l.label}
+                href={l.href}
+                onClick={(e) => onNav(e, l.href)}
+                className="text-sm font-medium text-neutral-700 transition-colors hover:text-brand"
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Acciones a la derecha */}
+          <div className="flex items-center gap-1.5">
+            <a
+              href={COTIZAR}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden h-10 items-center justify-center rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-deep sm:inline-flex"
             >
-              <Image
-                src="/brand/ee-mark.png"
-                alt="Equipos y Equipos"
-                width={1536}
-                height={1024}
-                className="h-9 w-auto sm:h-10"
-                priority
-              />
-            </Link>
+              Cotizar
+            </a>
 
-            {/* Acciones a la derecha */}
-            <div className="flex items-center gap-6">
-              <div className="hidden items-center gap-6 sm:flex">
-                {LINKS.map((l) => (
-                  <Link
-                    key={l.label}
-                    href={l.href}
-                    onClick={(e) => onNav(e, l.href)}
-                    className="text-sm font-medium text-neutral-800 transition-colors hover:text-brand"
-                  >
-                    {l.label}
-                  </Link>
-                ))}
-              </div>
-
-              <a
-                href={COTIZAR}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden h-9 items-center justify-center rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-deep sm:inline-flex"
-              >
-                Cotizar
-              </a>
-
-              {/* Mobile: toggle hamburguesa, fijo a la derecha */}
-              <button
-                type="button"
-                onClick={() => setOpen((v) => !v)}
-                aria-label={open ? "Cerrar menú" : "Abrir menú"}
-                aria-expanded={open}
-                className="relative z-[80] flex h-10 w-10 items-center justify-center rounded-full text-neutral-900 transition-colors hover:bg-neutral-100 sm:hidden"
-              >
-                <MenuToggle open={open} />
-              </button>
-            </div>
-          </nav>
-        </div>
+            {/* Mobile: toggle hamburguesa dentro de la isla */}
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-label={open ? "Cerrar menú" : "Abrir menú"}
+              aria-expanded={open}
+              className="relative z-[80] flex h-10 w-10 items-center justify-center rounded-full text-neutral-900 transition-colors hover:bg-neutral-100 sm:hidden"
+            >
+              <MenuToggle open={open} />
+            </button>
+          </div>
+        </nav>
       </header>
 
       {/* Menú móvil fullscreen (patrón Linear, fondo claro de marca) */}
