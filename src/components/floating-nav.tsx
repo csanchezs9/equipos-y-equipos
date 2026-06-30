@@ -184,7 +184,7 @@ export function FloatingNav() {
               alt="Equipos y Equipos"
               width={1536}
               height={1024}
-              className="h-8 w-auto sm:h-9"
+              className="h-10 w-auto sm:h-9"
               priority
             />
           </Link>
