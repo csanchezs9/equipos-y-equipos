@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/smooth-scroll";
@@ -88,6 +88,14 @@ export const metadata: Metadata = {
     images: [OG_IMAGE],
   },
   formatDetection: { telephone: true, email: true, address: true },
+};
+
+// viewport-fit=cover expone env(safe-area-inset-*) para respetar la
+// Dynamic Island / notch del iPhone en el navbar fijo.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

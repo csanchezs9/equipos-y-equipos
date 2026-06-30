@@ -15,11 +15,12 @@ const LINKS = [
 ];
 
 const COTIZAR = waLink("Hola Equipos y Equipos, quiero cotizar un equipo.");
+const TEL = "tel:+573113095760";
 
 /* ----- Toggle hamburguesa -> X ----- */
 function MenuToggle({ open }: { open: boolean }) {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden>
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
       <motion.path
         fill="none"
         stroke="currentColor"
@@ -52,6 +53,7 @@ function MenuToggle({ open }: { open: boolean }) {
   );
 }
 
+// Menú móvil agrupado (patrón Linear: label gris + links grandes).
 const GROUPS: {
   label: string;
   links: { label: string; href: string; external?: boolean }[];
@@ -69,7 +71,7 @@ const GROUPS: {
     label: "Contacto",
     links: [
       { label: "Cotizar por WhatsApp", href: COTIZAR, external: true },
-      { label: "Llamar", href: "tel:+573113095760" },
+      { label: "Llamar", href: TEL },
       { label: "Cómo llegar", href: "/#sedes" },
     ],
   },
@@ -82,13 +84,13 @@ const menuVariants: Variants = {
   },
   open: {
     opacity: 1,
-    transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.04, delayChildren: 0.1 },
+    transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.045, delayChildren: 0.08 },
   },
 };
 
 const itemVariants: Variants = {
   closed: { y: 18, opacity: 0, transition: { duration: 0.2 } },
-  open: { y: 0, opacity: 1, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+  open: { y: 0, opacity: 1, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
 };
 
 export function FloatingNav() {
@@ -145,66 +147,72 @@ export function FloatingNav() {
 
   return (
     <>
-      <div
-        className={`fixed inset-x-0 top-0 z-[70] flex justify-center px-4 transition-all duration-500 [transition-timing-function:var(--ease-out-expo)] ${
-          show
-            ? "translate-y-0 opacity-100"
-            : "pointer-events-none -translate-y-full opacity-0"
+      {/* Barra fija de ancho completo. Respeta la safe-area del iPhone
+          (Dynamic Island / notch) con el padding-top env(). */}
+      <header
+        className={`fixed inset-x-0 top-0 z-[70] transition-all duration-500 [transition-timing-function:var(--ease-out-expo)] ${
+          show ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-full opacity-0"
         }`}
       >
-        <nav className="flex items-center gap-5 rounded-b-xl border border-t-0 border-neutral-200 bg-white px-5 py-1.5 shadow-sm">
-          <Link
-            href="/"
-            aria-label="Equipos y Equipos — inicio"
-            className="shrink-0"
-            onClick={() => setOpen(false)}
-          >
-            <Image
-              src="/brand/ee-mark.png"
-              alt="Equipos y Equipos"
-              width={1536}
-              height={1024}
-              className="h-16 w-auto"
-            />
-          </Link>
+        <div className="border-b border-neutral-200/70 bg-white/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
+          <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:h-16 sm:px-6">
+            {/* Logo fijo a la izquierda */}
+            <Link
+              href="/"
+              aria-label="Equipos y Equipos — inicio"
+              className="shrink-0"
+              onClick={() => setOpen(false)}
+            >
+              <Image
+                src="/brand/ee-mark.png"
+                alt="Equipos y Equipos"
+                width={1536}
+                height={1024}
+                className="h-9 w-auto sm:h-10"
+                priority
+              />
+            </Link>
 
-          <div className="hidden items-center gap-6 sm:flex">
-            {LINKS.map((l) => (
-              <Link
-                key={l.label}
-                href={l.href}
-                onClick={(e) => onNav(e, l.href)}
-                className="text-xs font-medium text-neutral-900 transition-colors hover:text-brand"
+            {/* Acciones a la derecha */}
+            <div className="flex items-center gap-6">
+              <div className="hidden items-center gap-6 sm:flex">
+                {LINKS.map((l) => (
+                  <Link
+                    key={l.label}
+                    href={l.href}
+                    onClick={(e) => onNav(e, l.href)}
+                    className="text-sm font-medium text-neutral-800 transition-colors hover:text-brand"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+              </div>
+
+              <a
+                href={COTIZAR}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden h-9 items-center justify-center rounded-full bg-brand px-4 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-deep sm:inline-flex"
               >
-                {l.label}
-              </Link>
-            ))}
-          </div>
+                Cotizar
+              </a>
 
-          {/* Desktop: Cotizar */}
-          <a
-            href={COTIZAR}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden h-8 items-center justify-center rounded-md border border-neutral-200 bg-white px-3.5 text-xs font-medium text-neutral-900 shadow-sm transition-colors hover:bg-neutral-50 sm:inline-flex"
-          >
-            Cotizar
-          </a>
+              {/* Mobile: toggle hamburguesa, fijo a la derecha */}
+              <button
+                type="button"
+                onClick={() => setOpen((v) => !v)}
+                aria-label={open ? "Cerrar menú" : "Abrir menú"}
+                aria-expanded={open}
+                className="relative z-[80] flex h-10 w-10 items-center justify-center rounded-full text-neutral-900 transition-colors hover:bg-neutral-100 sm:hidden"
+              >
+                <MenuToggle open={open} />
+              </button>
+            </div>
+          </nav>
+        </div>
+      </header>
 
-          {/* Mobile: toggle */}
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-label={open ? "Cerrar menú" : "Abrir menú"}
-            aria-expanded={open}
-            className="flex h-9 w-9 items-center justify-center rounded-md text-neutral-900 transition-colors hover:bg-neutral-100 sm:hidden"
-          >
-            <MenuToggle open={open} />
-          </button>
-        </nav>
-      </div>
-
-      {/* Menú fullscreen (estilo Linear) */}
+      {/* Menú móvil fullscreen (patrón Linear, fondo claro de marca) */}
       <AnimatePresence>
         {open ? (
           <motion.div
@@ -213,14 +221,20 @@ export function FloatingNav() {
             initial="closed"
             animate="open"
             exit="closed"
-            className="fixed inset-0 z-[60] overflow-y-auto bg-white sm:hidden"
+            className="fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-white sm:hidden"
           >
-            <div className="flex min-h-full flex-col px-7 pb-12 pt-28">
+            {/* halo de marca arriba */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(120%_80%_at_50%_-20%,rgba(43,143,217,0.14),transparent_70%)]"
+            />
+
+            <div className="relative flex min-h-full flex-col px-7 pb-10 pt-[calc(env(safe-area-inset-top)+6rem)]">
               {GROUPS.map((g) => (
                 <div key={g.label} className="mb-9">
                   <motion.p
                     variants={itemVariants}
-                    className="mb-3 text-sm font-medium text-neutral-400"
+                    className="kicker mb-3 text-sm text-neutral-400"
                   >
                     {g.label}
                   </motion.p>
@@ -251,6 +265,32 @@ export function FloatingNav() {
                   </div>
                 </div>
               ))}
+
+              {/* CTA WhatsApp */}
+              <motion.a
+                variants={itemVariants}
+                href={COTIZAR}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+                className="mt-2 flex items-center justify-center gap-2 rounded-2xl bg-brand px-5 py-4 text-base font-semibold text-white shadow-lg shadow-brand/25 transition-colors hover:bg-brand-deep"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                  <path d="M12.04 2a9.9 9.9 0 0 0-8.46 15.01L2 22l5.13-1.34A9.9 9.9 0 1 0 12.04 2Zm0 1.8a8.1 8.1 0 0 1 6.88 12.36l-.2.32.7 2.56-2.63-.69-.31.18a8.1 8.1 0 1 1-4.44-14.93Zm-3.1 4.07c-.15 0-.4.06-.6.29-.21.23-.8.78-.8 1.9 0 1.12.82 2.2.93 2.36.11.15 1.6 2.56 3.96 3.5 1.96.77 2.36.62 2.79.58.43-.04 1.38-.56 1.58-1.11.2-.55.2-1.02.14-1.12-.06-.1-.21-.16-.45-.28-.24-.12-1.38-.68-1.6-.76-.21-.08-.37-.12-.52.12-.15.23-.6.76-.73.91-.13.16-.27.18-.5.06-.24-.12-1-.37-1.9-1.18-.7-.62-1.18-1.4-1.32-1.63-.13-.24-.01-.37.1-.49.11-.11.24-.27.36-.41.12-.15.16-.25.24-.41.08-.16.04-.3-.02-.42-.06-.12-.52-1.28-.72-1.75-.19-.46-.38-.4-.52-.4l-.45-.01Z" />
+                </svg>
+                Cotizar por WhatsApp
+              </motion.a>
+
+              {/* Pie: sedes + llamar */}
+              <motion.div
+                variants={itemVariants}
+                className="mt-auto flex items-center justify-between pt-8 text-sm text-neutral-400"
+              >
+                <span>Itagüí · Pereira · Armenia</span>
+                <a href={TEL} className="font-medium text-neutral-600 transition-colors hover:text-brand">
+                  Llamar
+                </a>
+              </motion.div>
             </div>
           </motion.div>
         ) : null}
