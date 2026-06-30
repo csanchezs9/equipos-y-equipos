@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { waLink } from "@/lib/utils";
 import { getLenis } from "@/components/smooth-scroll";
@@ -100,6 +101,10 @@ export function FloatingNav() {
   const [scrolled, setScrolled] = useState(false);
   const [condensed, setCondensed] = useState(false);
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // El menú se monta vía portal a <body>; esperamos a estar en cliente.
+  useEffect(() => setMounted(true), []);
 
   // Isla reactiva: aparece tras 600px y se "condensa" (más sólida y
   // compacta) al seguir bajando, en vez de solo aparecer/desaparecer.
@@ -224,24 +229,32 @@ export function FloatingNav() {
         </nav>
       </header>
 
-      {/* Menú móvil fullscreen (patrón Linear, fondo claro de marca) */}
-      <AnimatePresence>
-        {open ? (
-          <motion.div
-            key="menu"
-            variants={menuVariants}
-            initial="closed"
-            animate="open"
-            exit="closed"
-            className="fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-white sm:hidden"
-          >
-            {/* halo de marca arriba */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(120%_80%_at_50%_-20%,rgba(43,143,217,0.14),transparent_70%)]"
-            />
+      {/* Menú móvil fullscreen (patrón Linear, fondo claro de marca).
+          Va en un portal a <body> para escapar stacking contexts, y el
+          fondo blanco es una capa fija sin scroll (el contenido scrollea en
+          una capa aparte): así iOS pinta el blanco de borde a borde,
+          incluso bajo la Dynamic Island y el home indicator. */}
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {open ? (
+              <motion.div
+                key="menu"
+                variants={menuVariants}
+                initial="closed"
+                animate="open"
+                exit="closed"
+                className="fixed inset-0 z-[60] bg-white sm:hidden"
+              >
+                {/* halo de marca arriba */}
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(120%_80%_at_50%_-20%,rgba(43,143,217,0.14),transparent_70%)]"
+                />
 
-            <div className="relative flex min-h-full flex-col px-7 pb-10 pt-[calc(env(safe-area-inset-top)+6rem)]">
+                {/* Capa de scroll, separada del fondo blanco */}
+                <div className="absolute inset-0 overflow-y-auto">
+                  <div className="relative flex min-h-full flex-col px-7 pb-[calc(env(safe-area-inset-bottom)+2.5rem)] pt-[calc(env(safe-area-inset-top)+6rem)]">
               {GROUPS.map((g) => (
                 <div key={g.label} className="mb-9">
                   <motion.p
@@ -303,10 +316,13 @@ export function FloatingNav() {
                   Llamar
                 </a>
               </motion.div>
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+                </div>
+                </div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>,
+          document.body
+        )}
     </>
   );
 }
