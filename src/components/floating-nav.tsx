@@ -161,17 +161,15 @@ export function FloatingNav() {
       {/* Isla flotante centrada. Baja un poco con pt env() para librar la
           Dynamic Island / notch del iPhone sin pegarse al borde. */}
       <header
-        className={`fixed inset-x-0 top-0 z-[70] flex justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.6rem)] transition-all duration-500 [transition-timing-function:var(--ease-out-expo)] sm:px-4 sm:pt-[calc(env(safe-area-inset-top)+0.9rem)] ${
+        className={`fixed inset-x-0 top-0 z-[70] flex justify-center bg-white px-3 pb-2.5 pt-[calc(env(safe-area-inset-top)+0.5rem)] transition-all duration-500 [transition-timing-function:var(--ease-out-expo)] sm:px-4 sm:pb-3 sm:pt-[calc(env(safe-area-inset-top)+0.75rem)] ${
           show ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-4 opacity-0"
         }`}
       >
         <nav
-          className={`flex w-auto max-w-[calc(100%-1.25rem)] items-center gap-2.5 rounded-full border border-neutral-200/70 pl-5 pr-2 ring-1 ring-white/50 transition-all duration-300 [transition-timing-function:var(--ease-out-expo)] sm:gap-3 sm:pl-6 ${
-            open
-              ? "h-14 bg-white shadow-md shadow-neutral-900/5 sm:h-15"
-              : condensed
-                ? "h-13 bg-white/90 shadow-lg shadow-neutral-900/10 backdrop-blur-xl sm:h-14"
-                : "h-14 bg-white/75 shadow-md shadow-neutral-900/5 backdrop-blur-xl sm:h-15"
+          className={`flex w-auto max-w-[calc(100%-1.25rem)] items-center gap-2.5 rounded-full border border-neutral-200 bg-white pl-5 pr-2 transition-all duration-300 [transition-timing-function:var(--ease-out-expo)] sm:gap-3 sm:pl-6 ${
+            condensed
+              ? "h-13 shadow-md shadow-neutral-900/8 sm:h-14"
+              : "h-14 shadow-sm shadow-neutral-900/5 sm:h-15"
           }`}
         >
           {/* Logo a la izquierda */}
