@@ -104,13 +104,13 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${inter.variable} ${geistMono.variable} ${space.variable} h-full overflow-x-hidden`}
+      className={`${inter.variable} ${geistMono.variable} ${space.variable} h-full overflow-x-clip`}
     >
-      <body className="min-h-full overflow-x-hidden bg-ink text-bone grain">
+      <body className="min-h-full overflow-x-clip bg-ink text-bone grain">
         <JsonLd data={[organizationSchema, localBusinessSchema, websiteSchema]} />
         <SmoothScroll>
           <FloatingNav />
-          <main className="overflow-x-hidden">{children}</main>
+          <main className="overflow-x-clip">{children}</main>
           <Footer />
           <FloatingActionMenu />
         </SmoothScroll>
