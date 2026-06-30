@@ -80,15 +80,11 @@ const GROUPS: {
 const menuVariants: Variants = {
   closed: {
     opacity: 0,
-    scale: 0.96,
-    y: -10,
-    transition: { duration: 0.25, ease: [0.7, 0, 0.84, 0], when: "afterChildren" },
+    transition: { duration: 0.2, ease: [0.7, 0, 0.84, 0], when: "afterChildren" },
   },
   open: {
     opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.045, delayChildren: 0.1 },
+    transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1], staggerChildren: 0.05, delayChildren: 0.08 },
   },
 };
 
@@ -237,7 +233,6 @@ export function FloatingNav() {
             initial="closed"
             animate="open"
             exit="closed"
-            style={{ transformOrigin: "top center" }}
             className="fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-white sm:hidden"
           >
             {/* halo de marca arriba */}
