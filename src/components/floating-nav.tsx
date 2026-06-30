@@ -166,10 +166,12 @@ export function FloatingNav() {
         }`}
       >
         <nav
-          className={`flex w-auto max-w-[calc(100%-1.25rem)] items-center gap-2.5 rounded-full border border-neutral-200/70 pl-5 pr-2 ring-1 ring-white/50 backdrop-blur-xl transition-all duration-300 [transition-timing-function:var(--ease-out-expo)] sm:gap-3 sm:pl-6 ${
-            condensed
-              ? "h-13 bg-white/90 shadow-lg shadow-neutral-900/10 sm:h-14"
-              : "h-14 bg-white/75 shadow-md shadow-neutral-900/5 sm:h-15"
+          className={`flex w-auto max-w-[calc(100%-1.25rem)] items-center gap-2.5 rounded-full border border-neutral-200/70 pl-5 pr-2 ring-1 ring-white/50 transition-all duration-300 [transition-timing-function:var(--ease-out-expo)] sm:gap-3 sm:pl-6 ${
+            open
+              ? "h-14 bg-white shadow-md shadow-neutral-900/5 sm:h-15"
+              : condensed
+                ? "h-13 bg-white/90 shadow-lg shadow-neutral-900/10 backdrop-blur-xl sm:h-14"
+                : "h-14 bg-white/75 shadow-md shadow-neutral-900/5 backdrop-blur-xl sm:h-15"
           }`}
         >
           {/* Logo a la izquierda */}
