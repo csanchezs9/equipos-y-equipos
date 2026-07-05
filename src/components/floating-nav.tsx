@@ -162,7 +162,6 @@ export function FloatingNav() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const navBg = mixRGBA([255, 255, 255, 0.1], [255, 255, 255, 1], progress);
   const navBorder = mixRGBA([255, 255, 255, 0.15], [229, 229, 229, 1], progress);
   const navShadow = `0 4px 14px rgba(23, 23, 23, ${(0.06 * progress).toFixed(3)})`;
   const navFg = mixRGBA([255, 255, 255, 1], [64, 64, 64, 1], progress);
@@ -198,73 +197,79 @@ export function FloatingNav() {
         className="fixed inset-x-0 top-0 z-[70] flex justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.6rem)] transition-all duration-500 [transition-timing-function:var(--ease-out-expo)] sm:px-4 sm:pt-[calc(env(safe-area-inset-top)+0.9rem)]"
       >
         <nav
-          style={{
-            backgroundColor: navBg,
-            borderColor: navBorder,
-            boxShadow: navShadow,
-          }}
-          className={`flex w-auto max-w-[calc(100%-1.25rem)] items-center gap-2.5 rounded-full border pl-5 pr-2 backdrop-blur-md transition-[height,box-shadow] duration-300 [transition-timing-function:var(--ease-out-expo)] sm:gap-3 sm:pl-6 ${
+          style={{ borderColor: navBorder, boxShadow: navShadow }}
+          className={`relative w-auto max-w-[calc(100%-1.25rem)] overflow-hidden rounded-full border bg-white/10 backdrop-blur-md transition-[height,box-shadow] duration-300 [transition-timing-function:var(--ease-out-expo)] ${
             condensed ? "h-13 sm:h-14" : "h-14 sm:h-15"
           }`}
         >
-          {/* Logo a la izquierda */}
-          <Link
-            href="/"
-            aria-label="Equipos y Equipos — inicio"
-            className="shrink-0"
-            onClick={() => setOpen(false)}
-          >
-            <Image
-              src="/brand/ee-mark.png"
-              alt="Equipos y Equipos"
-              width={1536}
-              height={1024}
-              className="h-14 w-auto sm:h-14"
-              priority
-            />
-          </Link>
+          {/* Blanco que sube desde abajo, alineado con la sección blanca de
+              abajo que se acerca por detrás (no un fundido parejo). */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 bg-white"
+            style={{ height: `${progress * 100}%` }}
+          />
 
-          {/* Links centro (desktop) */}
-          <div className="hidden items-center gap-6 pl-2 sm:flex">
-            {LINKS.map((l) => (
-              <Link
-                key={l.label}
-                href={l.href}
-                onClick={(e) => onNav(e, l.href)}
-                style={{ color: navFg }}
-                className="text-sm font-medium transition-colors hover:!text-brand"
+          <div className="relative z-10 flex h-full items-center gap-2.5 pl-5 pr-2 sm:gap-3 sm:pl-6">
+            {/* Logo a la izquierda */}
+            <Link
+              href="/"
+              aria-label="Equipos y Equipos — inicio"
+              className="shrink-0"
+              onClick={() => setOpen(false)}
+            >
+              <Image
+                src="/brand/ee-mark.png"
+                alt="Equipos y Equipos"
+                width={1536}
+                height={1024}
+                className="h-14 w-auto sm:h-14"
+                priority
+              />
+            </Link>
+
+            {/* Links centro (desktop) */}
+            <div className="hidden items-center gap-6 pl-2 sm:flex">
+              {LINKS.map((l) => (
+                <Link
+                  key={l.label}
+                  href={l.href}
+                  onClick={(e) => onNav(e, l.href)}
+                  style={{ color: navFg }}
+                  className="text-sm font-medium transition-colors hover:!text-brand"
+                >
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+
+            {/* Acciones a la derecha */}
+            <div className="flex items-center gap-1.5">
+              <a
+                href={COTIZAR}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden h-10 items-center justify-center rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-deep sm:inline-flex"
               >
-                {l.label}
-              </Link>
-            ))}
-          </div>
+                Cotizar
+              </a>
 
-          {/* Acciones a la derecha */}
-          <div className="flex items-center gap-1.5">
-            <a
-              href={COTIZAR}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden h-10 items-center justify-center rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-deep sm:inline-flex"
-            >
-              Cotizar
-            </a>
-
-            {/* Mobile: toggle hamburguesa dentro de la isla */}
-            <button
-              type="button"
-              onClick={() => setOpen((v) => !v)}
-              aria-label={open ? "Cerrar menú" : "Abrir menú"}
-              aria-expanded={open}
-              style={open ? undefined : { color: navIcon }}
-              className={`relative z-[80] flex h-10 w-10 items-center justify-center rounded-full transition-colors sm:hidden ${
-                open
-                  ? "text-neutral-900 hover:bg-neutral-100"
-                  : "hover:bg-neutral-900/10"
-              }`}
-            >
-              <MenuToggle open={open} />
-            </button>
+              {/* Mobile: toggle hamburguesa dentro de la isla */}
+              <button
+                type="button"
+                onClick={() => setOpen((v) => !v)}
+                aria-label={open ? "Cerrar menú" : "Abrir menú"}
+                aria-expanded={open}
+                style={open ? undefined : { color: navIcon }}
+                className={`relative z-[80] flex h-10 w-10 items-center justify-center rounded-full transition-colors sm:hidden ${
+                  open
+                    ? "text-neutral-900 hover:bg-neutral-100"
+                    : "hover:bg-neutral-900/10"
+                }`}
+              >
+                <MenuToggle open={open} />
+              </button>
+            </div>
           </div>
         </nav>
       </header>
