@@ -134,7 +134,9 @@ export function FloatingNav() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const show = !isHome || scrolled;
+  // En home, antes de scrollear, la isla es "fantasma" (transparente, texto
+  // blanco) sobre el hero oscuro; al bajar se vuelve la píldora blanca sólida.
+  const ghost = isHome && !scrolled;
 
   // Anchors (#contacto, #faq…). En home: scroll suave con Lenis. Cross-page:
   // guarda la intención en sessionStorage y navega (lo consume el home al
@@ -161,16 +163,18 @@ export function FloatingNav() {
     <>
       {/* Isla flotante centrada. Baja un poco con pt env() para librar la
           Dynamic Island / notch del iPhone sin pegarse al borde. */}
-      <header
-        className={`fixed inset-x-0 top-0 z-[70] flex justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.6rem)] transition-all duration-500 [transition-timing-function:var(--ease-out-expo)] sm:px-4 sm:pt-[calc(env(safe-area-inset-top)+0.9rem)] ${
-          show ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-4 opacity-0"
-        }`}
-      >
+      <header className="fixed inset-x-0 top-0 z-[70] flex justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.6rem)] transition-all duration-500 [transition-timing-function:var(--ease-out-expo)] sm:px-4 sm:pt-[calc(env(safe-area-inset-top)+0.9rem)]">
         <nav
-          className={`flex w-auto max-w-[calc(100%-1.25rem)] items-center gap-2.5 rounded-full border border-neutral-200 bg-white pl-5 pr-2 transition-all duration-300 [transition-timing-function:var(--ease-out-expo)] sm:gap-3 sm:pl-6 ${
+          className={`flex w-auto max-w-[calc(100%-1.25rem)] items-center gap-2.5 rounded-full border pl-5 pr-2 transition-all duration-300 [transition-timing-function:var(--ease-out-expo)] sm:gap-3 sm:pl-6 ${
+            ghost
+              ? "border-white/15 bg-white/10 backdrop-blur-md"
+              : "border-neutral-200 bg-white"
+          } ${
             condensed
               ? "h-13 shadow-lg shadow-neutral-900/10 sm:h-14"
-              : "h-14 shadow-md shadow-neutral-900/5 sm:h-15"
+              : ghost
+                ? "h-14 shadow-none sm:h-15"
+                : "h-14 shadow-md shadow-neutral-900/5 sm:h-15"
           }`}
         >
           {/* Logo a la izquierda */}
@@ -197,7 +201,11 @@ export function FloatingNav() {
                 key={l.label}
                 href={l.href}
                 onClick={(e) => onNav(e, l.href)}
-                className="text-sm font-medium text-neutral-700 transition-colors hover:text-brand"
+                className={`text-sm font-medium transition-colors ${
+                  ghost
+                    ? "text-white/90 hover:text-white"
+                    : "text-neutral-700 hover:text-brand"
+                }`}
               >
                 {l.label}
               </Link>
@@ -221,7 +229,11 @@ export function FloatingNav() {
               onClick={() => setOpen((v) => !v)}
               aria-label={open ? "Cerrar menú" : "Abrir menú"}
               aria-expanded={open}
-              className="relative z-[80] flex h-10 w-10 items-center justify-center rounded-full text-neutral-900 transition-colors hover:bg-neutral-100 sm:hidden"
+              className={`relative z-[80] flex h-10 w-10 items-center justify-center rounded-full transition-colors sm:hidden ${
+                ghost && !open
+                  ? "text-white hover:bg-white/10"
+                  : "text-neutral-900 hover:bg-neutral-100"
+              }`}
             >
               <MenuToggle open={open} />
             </button>
