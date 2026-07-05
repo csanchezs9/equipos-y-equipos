@@ -106,17 +106,24 @@ export function FloatingNav() {
   // El menú se monta vía portal a <body>; esperamos a estar en cliente.
   useEffect(() => setMounted(true), []);
 
-  // Isla reactiva: aparece tras 600px y se "condensa" (más sólida y
-  // compacta) al seguir bajando, en vez de solo aparecer/desaparecer.
+  // El cambio de fantasma -> píldora sólida se dispara justo cuando el hero
+  // (#top) termina de salir de la pantalla, no a un scroll fijo: así funciona
+  // igual sin importar el alto real del hero en cada dispositivo.
   useEffect(() => {
+    const hero = document.getElementById("top");
+
     const onScroll = () => {
-      const y = window.scrollY;
-      setScrolled(y > 600);
-      setCondensed(y > 740);
+      const heroBottom = hero ? hero.getBoundingClientRect().bottom : 600;
+      setScrolled(heroBottom <= 90);
+      setCondensed(heroBottom <= -80);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
   // Bloquea scroll del body mientras el menú está abierto.
