@@ -119,9 +119,9 @@ export function FloatingNav() {
   // El menú se monta vía portal a <body>; esperamos a estar en cliente.
   useEffect(() => setMounted(true), []);
 
-  // El fantasma se va "convirtiendo" en píldora blanca a medida que el blanco
-  // de abajo del hero (#top) se acerca al borde inferior de la isla: el blend
-  // ocurre a lo largo de un alto de píldora de scroll, no de golpe.
+  // El blanco de adentro de la isla ocupa exactamente lo mismo que el blanco
+  // real de abajo del hero (#top) ya tapa detrás de la isla: solape
+  // geométrico 1:1, sin adelanto ni atraso.
   useEffect(() => {
     if (!isHome) {
       setProgress(1);
@@ -134,9 +134,9 @@ export function FloatingNav() {
       const heroBottom = hero ? hero.getBoundingClientRect().bottom : 0;
       const navBottom = headerRef.current?.getBoundingClientRect().bottom ?? 90;
       const pillHeight = headerRef.current?.offsetHeight ?? 60;
-      const gap = heroBottom - navBottom;
-      setProgress(clamp(1 - gap / pillHeight, 0, 1));
-      setCondensed(heroBottom <= navBottom - 80);
+      const overlap = clamp(navBottom - heroBottom, 0, pillHeight);
+      setProgress(overlap / pillHeight);
+      setCondensed(heroBottom <= navBottom - pillHeight - 20);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
