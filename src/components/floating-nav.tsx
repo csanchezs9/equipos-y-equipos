@@ -18,6 +18,17 @@ const LINKS = [
 const COTIZAR = waLink("Hola Equipos y Equipos, quiero cotizar un equipo.");
 const TEL = "tel:+573113095760";
 
+const clamp = (v: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, v));
+
+// Mezcla dos rgba (arrays [r,g,b,a]) según t (0-1) y arma el string css.
+function mixRGBA(a: number[], b: number[], t: number) {
+  const [r, g, bl, al] = a;
+  const [r2, g2, bl2, al2] = b;
+  const lerp = (x: number, y: number) => x + (y - x) * t;
+  return `rgba(${Math.round(lerp(r, r2))}, ${Math.round(lerp(g, g2))}, ${Math.round(lerp(bl, bl2))}, ${lerp(al, al2).toFixed(3)})`;
+}
+
 /* ----- Toggle hamburguesa -> X ----- */
 function MenuToggle({ open }: { open: boolean }) {
   return (
@@ -99,7 +110,8 @@ export function FloatingNav() {
   const router = useRouter();
   const isHome = pathname === "/";
   const headerRef = useRef<HTMLElement>(null);
-  const [scrolled, setScrolled] = useState(false);
+  // 0 = fantasma (transparente, texto blanco) · 1 = píldora blanca sólida.
+  const [progress, setProgress] = useState(0);
   const [condensed, setCondensed] = useState(false);
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -107,16 +119,23 @@ export function FloatingNav() {
   // El menú se monta vía portal a <body>; esperamos a estar en cliente.
   useEffect(() => setMounted(true), []);
 
-  // El cambio de fantasma -> píldora sólida se dispara justo cuando el blanco
-  // de abajo del hero (#top) toca el borde inferior de la propia isla, no a
-  // un scroll ni margen fijo: así funciona igual en cualquier dispositivo.
+  // El fantasma se va "convirtiendo" en píldora blanca a medida que el blanco
+  // de abajo del hero (#top) se acerca al borde inferior de la isla: el blend
+  // ocurre a lo largo de un alto de píldora de scroll, no de golpe.
   useEffect(() => {
+    if (!isHome) {
+      setProgress(1);
+      return;
+    }
+
     const hero = document.getElementById("top");
 
     const onScroll = () => {
-      const heroBottom = hero ? hero.getBoundingClientRect().bottom : 600;
+      const heroBottom = hero ? hero.getBoundingClientRect().bottom : 0;
       const navBottom = headerRef.current?.getBoundingClientRect().bottom ?? 90;
-      setScrolled(heroBottom <= navBottom);
+      const pillHeight = headerRef.current?.offsetHeight ?? 60;
+      const gap = heroBottom - navBottom;
+      setProgress(clamp(1 - gap / pillHeight, 0, 1));
       setCondensed(heroBottom <= navBottom - 80);
     };
     onScroll();
@@ -126,7 +145,7 @@ export function FloatingNav() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, []);
+  }, [isHome]);
 
   // Bloquea scroll del body mientras el menú está abierto.
   useEffect(() => {
@@ -143,9 +162,11 @@ export function FloatingNav() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // En home, antes de scrollear, la isla es "fantasma" (transparente, texto
-  // blanco) sobre el hero oscuro; al bajar se vuelve la píldora blanca sólida.
-  const ghost = isHome && !scrolled;
+  const navBg = mixRGBA([255, 255, 255, 0.1], [255, 255, 255, 1], progress);
+  const navBorder = mixRGBA([255, 255, 255, 0.15], [229, 229, 229, 1], progress);
+  const navShadow = `0 4px 14px rgba(23, 23, 23, ${(0.06 * progress).toFixed(3)})`;
+  const navFg = mixRGBA([255, 255, 255, 1], [64, 64, 64, 1], progress);
+  const navIcon = mixRGBA([255, 255, 255, 1], [23, 23, 23, 1], progress);
 
   // Anchors (#contacto, #faq…). En home: scroll suave con Lenis. Cross-page:
   // guarda la intención en sessionStorage y navega (lo consume el home al
@@ -177,16 +198,13 @@ export function FloatingNav() {
         className="fixed inset-x-0 top-0 z-[70] flex justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.6rem)] transition-all duration-500 [transition-timing-function:var(--ease-out-expo)] sm:px-4 sm:pt-[calc(env(safe-area-inset-top)+0.9rem)]"
       >
         <nav
-          className={`flex w-auto max-w-[calc(100%-1.25rem)] items-center gap-2.5 rounded-full border pl-5 pr-2 transition-all duration-300 [transition-timing-function:var(--ease-out-expo)] sm:gap-3 sm:pl-6 ${
-            ghost
-              ? "border-white/15 bg-white/10 backdrop-blur-md"
-              : "border-neutral-200 bg-white"
-          } ${
-            condensed
-              ? "h-13 shadow-lg shadow-neutral-900/10 sm:h-14"
-              : ghost
-                ? "h-14 shadow-none sm:h-15"
-                : "h-14 shadow-md shadow-neutral-900/5 sm:h-15"
+          style={{
+            backgroundColor: navBg,
+            borderColor: navBorder,
+            boxShadow: navShadow,
+          }}
+          className={`flex w-auto max-w-[calc(100%-1.25rem)] items-center gap-2.5 rounded-full border pl-5 pr-2 backdrop-blur-md transition-[height,box-shadow] duration-300 [transition-timing-function:var(--ease-out-expo)] sm:gap-3 sm:pl-6 ${
+            condensed ? "h-13 sm:h-14" : "h-14 sm:h-15"
           }`}
         >
           {/* Logo a la izquierda */}
@@ -213,11 +231,8 @@ export function FloatingNav() {
                 key={l.label}
                 href={l.href}
                 onClick={(e) => onNav(e, l.href)}
-                className={`text-sm font-medium transition-colors ${
-                  ghost
-                    ? "text-white/90 hover:text-white"
-                    : "text-neutral-700 hover:text-brand"
-                }`}
+                style={{ color: navFg }}
+                className="text-sm font-medium transition-colors hover:!text-brand"
               >
                 {l.label}
               </Link>
@@ -241,10 +256,11 @@ export function FloatingNav() {
               onClick={() => setOpen((v) => !v)}
               aria-label={open ? "Cerrar menú" : "Abrir menú"}
               aria-expanded={open}
+              style={open ? undefined : { color: navIcon }}
               className={`relative z-[80] flex h-10 w-10 items-center justify-center rounded-full transition-colors sm:hidden ${
-                ghost && !open
-                  ? "text-white hover:bg-white/10"
-                  : "text-neutral-900 hover:bg-neutral-100"
+                open
+                  ? "text-neutral-900 hover:bg-neutral-100"
+                  : "hover:bg-neutral-900/10"
               }`}
             >
               <MenuToggle open={open} />
