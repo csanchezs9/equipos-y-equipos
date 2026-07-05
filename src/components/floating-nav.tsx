@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { waLink } from "@/lib/utils";
@@ -98,6 +98,7 @@ export function FloatingNav() {
   const pathname = usePathname();
   const router = useRouter();
   const isHome = pathname === "/";
+  const headerRef = useRef<HTMLElement>(null);
   const [scrolled, setScrolled] = useState(false);
   const [condensed, setCondensed] = useState(false);
   const [open, setOpen] = useState(false);
@@ -106,16 +107,17 @@ export function FloatingNav() {
   // El menú se monta vía portal a <body>; esperamos a estar en cliente.
   useEffect(() => setMounted(true), []);
 
-  // El cambio de fantasma -> píldora sólida se dispara justo cuando el hero
-  // (#top) termina de salir de la pantalla, no a un scroll fijo: así funciona
-  // igual sin importar el alto real del hero en cada dispositivo.
+  // El cambio de fantasma -> píldora sólida se dispara justo cuando el blanco
+  // de abajo del hero (#top) toca el borde inferior de la propia isla, no a
+  // un scroll ni margen fijo: así funciona igual en cualquier dispositivo.
   useEffect(() => {
     const hero = document.getElementById("top");
 
     const onScroll = () => {
       const heroBottom = hero ? hero.getBoundingClientRect().bottom : 600;
-      setScrolled(heroBottom <= 90);
-      setCondensed(heroBottom <= -80);
+      const navBottom = headerRef.current?.getBoundingClientRect().bottom ?? 90;
+      setScrolled(heroBottom <= navBottom);
+      setCondensed(heroBottom <= navBottom - 80);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -170,7 +172,10 @@ export function FloatingNav() {
     <>
       {/* Isla flotante centrada. Baja un poco con pt env() para librar la
           Dynamic Island / notch del iPhone sin pegarse al borde. */}
-      <header className="fixed inset-x-0 top-0 z-[70] flex justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.6rem)] transition-all duration-500 [transition-timing-function:var(--ease-out-expo)] sm:px-4 sm:pt-[calc(env(safe-area-inset-top)+0.9rem)]">
+      <header
+        ref={headerRef}
+        className="fixed inset-x-0 top-0 z-[70] flex justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.6rem)] transition-all duration-500 [transition-timing-function:var(--ease-out-expo)] sm:px-4 sm:pt-[calc(env(safe-area-inset-top)+0.9rem)]"
+      >
         <nav
           className={`flex w-auto max-w-[calc(100%-1.25rem)] items-center gap-2.5 rounded-full border pl-5 pr-2 transition-all duration-300 [transition-timing-function:var(--ease-out-expo)] sm:gap-3 sm:pl-6 ${
             ghost
