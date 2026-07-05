@@ -37,19 +37,19 @@ export function Faq() {
     <section id="faq" className="bg-white text-neutral-900">
       <div className="mx-auto max-w-3xl px-6 py-20 md:py-28">
         <div className="flex flex-col items-start text-left">
-          <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">
+          <span data-reveal className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">
             Preguntas frecuentes
           </span>
-          <h2 className="mt-5 font-sans text-4xl font-semibold tracking-normal text-neutral-950 md:text-5xl md:leading-tight">
+          <h2 data-reveal className="mt-5 font-sans text-4xl font-semibold tracking-normal text-neutral-950 md:text-5xl md:leading-tight">
             Lo que más nos preguntan
           </h2>
-          <p className="mt-5 text-base leading-7 text-neutral-500">
+          <p data-reveal className="mt-5 text-base leading-7 text-neutral-500">
             Resolvemos las dudas comunes sobre alquiler, despacho y soporte. Si
             te queda algo, escríbenos y te respondemos al toque.
           </p>
         </div>
 
-        <Accordion type="single" collapsible className="mt-12 w-full">
+        <Accordion data-reveal type="single" collapsible className="mt-12 w-full">
           {FAQS.map((item, i) => (
             <AccordionItem key={i} value={`item-${i}`}>
               <AccordionTrigger>{item.q}</AccordionTrigger>
