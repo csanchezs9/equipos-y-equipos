@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { waLink } from "@/lib/utils";
@@ -17,17 +17,6 @@ const LINKS = [
 
 const COTIZAR = waLink("Hola Equipos y Equipos, quiero cotizar un equipo.");
 const TEL = "tel:+573113095760";
-
-const clamp = (v: number, min: number, max: number) =>
-  Math.min(max, Math.max(min, v));
-
-// Mezcla dos rgba (arrays [r,g,b,a]) según t (0-1) y arma el string css.
-function mixRGBA(a: number[], b: number[], t: number) {
-  const [r, g, bl, al] = a;
-  const [r2, g2, bl2, al2] = b;
-  const lerp = (x: number, y: number) => x + (y - x) * t;
-  return `rgba(${Math.round(lerp(r, r2))}, ${Math.round(lerp(g, g2))}, ${Math.round(lerp(bl, bl2))}, ${lerp(al, al2).toFixed(3)})`;
-}
 
 /* ----- Toggle hamburguesa -> X ----- */
 function MenuToggle({ open }: { open: boolean }) {
@@ -109,9 +98,7 @@ export function FloatingNav() {
   const pathname = usePathname();
   const router = useRouter();
   const isHome = pathname === "/";
-  const headerRef = useRef<HTMLElement>(null);
-  // 0 = fantasma (transparente, texto blanco) · 1 = píldora blanca sólida.
-  const [progress, setProgress] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
   const [condensed, setCondensed] = useState(false);
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -119,33 +106,18 @@ export function FloatingNav() {
   // El menú se monta vía portal a <body>; esperamos a estar en cliente.
   useEffect(() => setMounted(true), []);
 
-  // El blanco de adentro de la isla ocupa exactamente lo mismo que el blanco
-  // real de abajo del hero (#top) ya tapa detrás de la isla: solape
-  // geométrico 1:1, sin adelanto ni atraso.
+  // Isla reactiva: aparece tras 600px y se "condensa" (más sólida y
+  // compacta) al seguir bajando, en vez de solo aparecer/desaparecer.
   useEffect(() => {
-    if (!isHome) {
-      setProgress(1);
-      return;
-    }
-
-    const hero = document.getElementById("top");
-
     const onScroll = () => {
-      const heroBottom = hero ? hero.getBoundingClientRect().bottom : 0;
-      const navBottom = headerRef.current?.getBoundingClientRect().bottom ?? 90;
-      const pillHeight = headerRef.current?.offsetHeight ?? 60;
-      const overlap = clamp(navBottom - heroBottom, 0, pillHeight);
-      setProgress(overlap / pillHeight);
-      setCondensed(heroBottom <= navBottom - pillHeight - 20);
+      const y = window.scrollY;
+      setScrolled(y > 600);
+      setCondensed(y > 740);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, [isHome]);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Bloquea scroll del body mientras el menú está abierto.
   useEffect(() => {
@@ -162,10 +134,7 @@ export function FloatingNav() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const navBorder = mixRGBA([255, 255, 255, 0.15], [229, 229, 229, 1], progress);
-  const navShadow = `0 4px 14px rgba(23, 23, 23, ${(0.06 * progress).toFixed(3)})`;
-  const navFg = mixRGBA([255, 255, 255, 1], [64, 64, 64, 1], progress);
-  const navIcon = mixRGBA([255, 255, 255, 1], [23, 23, 23, 1], progress);
+  const show = !isHome || scrolled;
 
   // Anchors (#contacto, #faq…). En home: scroll suave con Lenis. Cross-page:
   // guarda la intención en sessionStorage y navega (lo consume el home al
@@ -193,83 +162,69 @@ export function FloatingNav() {
       {/* Isla flotante centrada. Baja un poco con pt env() para librar la
           Dynamic Island / notch del iPhone sin pegarse al borde. */}
       <header
-        ref={headerRef}
-        className="fixed inset-x-0 top-0 z-[70] flex justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.6rem)] transition-all duration-500 [transition-timing-function:var(--ease-out-expo)] sm:px-4 sm:pt-[calc(env(safe-area-inset-top)+0.9rem)]"
+        className={`fixed inset-x-0 top-0 z-[70] flex justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.6rem)] transition-all duration-500 [transition-timing-function:var(--ease-out-expo)] sm:px-4 sm:pt-[calc(env(safe-area-inset-top)+0.9rem)] ${
+          show ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-4 opacity-0"
+        }`}
       >
         <nav
-          style={{ borderColor: navBorder, boxShadow: navShadow }}
-          className={`relative w-auto max-w-[calc(100%-1.25rem)] overflow-hidden rounded-full border bg-white/10 backdrop-blur-md transition-[height,box-shadow] duration-300 [transition-timing-function:var(--ease-out-expo)] ${
-            condensed ? "h-13 sm:h-14" : "h-14 sm:h-15"
+          className={`flex w-auto max-w-[calc(100%-1.25rem)] items-center gap-2.5 rounded-full border border-neutral-200 bg-white pl-5 pr-2 transition-all duration-300 [transition-timing-function:var(--ease-out-expo)] sm:gap-3 sm:pl-6 ${
+            condensed
+              ? "h-13 shadow-lg shadow-neutral-900/10 sm:h-14"
+              : "h-14 shadow-md shadow-neutral-900/5 sm:h-15"
           }`}
         >
-          {/* Blanco que sube desde abajo, alineado con la sección blanca de
-              abajo que se acerca por detrás (no un fundido parejo). */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 bottom-0 bg-white"
-            style={{ height: `${progress * 100}%` }}
-          />
+          {/* Logo a la izquierda */}
+          <Link
+            href="/"
+            aria-label="Equipos y Equipos — inicio"
+            className="shrink-0"
+            onClick={() => setOpen(false)}
+          >
+            <Image
+              src="/brand/ee-mark.png"
+              alt="Equipos y Equipos"
+              width={1536}
+              height={1024}
+              className="h-14 w-auto sm:h-14"
+              priority
+            />
+          </Link>
 
-          <div className="relative z-10 flex h-full items-center gap-2.5 pl-5 pr-2 sm:gap-3 sm:pl-6">
-            {/* Logo a la izquierda */}
-            <Link
-              href="/"
-              aria-label="Equipos y Equipos — inicio"
-              className="shrink-0"
-              onClick={() => setOpen(false)}
+          {/* Links centro (desktop) */}
+          <div className="hidden items-center gap-6 pl-2 sm:flex">
+            {LINKS.map((l) => (
+              <Link
+                key={l.label}
+                href={l.href}
+                onClick={(e) => onNav(e, l.href)}
+                className="text-sm font-medium text-neutral-700 transition-colors hover:text-brand"
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Acciones a la derecha */}
+          <div className="flex items-center gap-1.5">
+            <a
+              href={COTIZAR}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden h-10 items-center justify-center rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-deep sm:inline-flex"
             >
-              <Image
-                src="/brand/ee-mark.png"
-                alt="Equipos y Equipos"
-                width={1536}
-                height={1024}
-                className="h-14 w-auto sm:h-14"
-                priority
-              />
-            </Link>
+              Cotizar
+            </a>
 
-            {/* Links centro (desktop) */}
-            <div className="hidden items-center gap-6 pl-2 sm:flex">
-              {LINKS.map((l) => (
-                <Link
-                  key={l.label}
-                  href={l.href}
-                  onClick={(e) => onNav(e, l.href)}
-                  style={{ color: navFg }}
-                  className="text-sm font-medium transition-colors hover:!text-brand"
-                >
-                  {l.label}
-                </Link>
-              ))}
-            </div>
-
-            {/* Acciones a la derecha */}
-            <div className="flex items-center gap-1.5">
-              <a
-                href={COTIZAR}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden h-10 items-center justify-center rounded-full bg-brand px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-deep sm:inline-flex"
-              >
-                Cotizar
-              </a>
-
-              {/* Mobile: toggle hamburguesa dentro de la isla */}
-              <button
-                type="button"
-                onClick={() => setOpen((v) => !v)}
-                aria-label={open ? "Cerrar menú" : "Abrir menú"}
-                aria-expanded={open}
-                style={open ? undefined : { color: navIcon }}
-                className={`relative z-[80] flex h-10 w-10 items-center justify-center rounded-full transition-colors sm:hidden ${
-                  open
-                    ? "text-neutral-900 hover:bg-neutral-100"
-                    : "hover:bg-neutral-900/10"
-                }`}
-              >
-                <MenuToggle open={open} />
-              </button>
-            </div>
+            {/* Mobile: toggle hamburguesa dentro de la isla */}
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-label={open ? "Cerrar menú" : "Abrir menú"}
+              aria-expanded={open}
+              className="relative z-[80] flex h-10 w-10 items-center justify-center rounded-full text-neutral-900 transition-colors hover:bg-neutral-100 sm:hidden"
+            >
+              <MenuToggle open={open} />
+            </button>
           </div>
         </nav>
       </header>

@@ -60,7 +60,7 @@ export function DispatchBoard({ products }: { products: Product[] }) {
             return (
               <li key={p.id}>
                 <Link
-                  href="/equipos"
+                  href={`/equipos/${p.slug}`}
                   data-active={isActive}
                   onMouseEnter={() => setActive(i)}
                   onFocus={() => setActive(i)}
@@ -161,10 +161,10 @@ export function DispatchBoard({ products }: { products: Product[] }) {
                 Preguntar por este equipo
               </a>
               <Link
-                href="/equipos"
+                href={`/equipos/${current.slug}`}
                 className="group flex items-center justify-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-ink transition-colors hover:border-white/40"
               >
-                Ver en el catálogo
+                Ver ficha completa
                 <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>

@@ -29,7 +29,7 @@ export function Contacto() {
       <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
         <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm md:grid md:grid-cols-2">
           {/* Imagen */}
-          <div data-reveal="left" className="relative min-h-[320px] md:min-h-full">
+          <div className="relative min-h-[320px] md:min-h-full">
             <Image
               src="/contactanos/contacto.webp"
               alt="Equipo revisando planos en obra"
@@ -40,7 +40,7 @@ export function Contacto() {
           </div>
 
           {/* Formulario */}
-          <div data-reveal="right" className="p-7 md:p-12">
+          <div className="p-7 md:p-12">
             <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">
               Contacto
             </span>
