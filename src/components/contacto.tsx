@@ -27,7 +27,9 @@ export function Contacto() {
 
   return (
     <section id="contacto" className="bg-white text-neutral-900">
-      <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
+      {/* pt corto: FAQ ya cierra con pb-20/pb-28. Con el mismo pt acá los dos
+          paddings se sumaban y dejaban ~224px de blanco entre secciones. */}
+      <div className="mx-auto max-w-6xl px-6 pb-20 pt-4 md:pb-28 md:pt-6">
         <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm md:grid md:grid-cols-2">
           {/* Imagen */}
           <div className="relative min-h-[320px] md:min-h-full">

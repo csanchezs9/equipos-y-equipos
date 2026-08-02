@@ -10,7 +10,10 @@ const STATS: Stat[] = [
 export function Nosotros() {
   return (
     <section id="nosotros" className="relative overflow-hidden bg-white text-neutral-900">
-      <div className="mx-auto max-w-3xl px-6 pt-20 text-center md:pt-28">
+      {/* pt corto a propósito: la sección de arriba ya cierra con pb-20/pb-28,
+          y si acá abría con lo mismo los dos paddings se sumaban y dejaban
+          ~224px de blanco entre secciones. */}
+      <div className="mx-auto max-w-3xl px-6 pt-4 text-center md:pt-6">
         <span className="rounded-full border border-hazard bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">
           Nosotros
         </span>
