@@ -71,7 +71,8 @@ export default function Home() {
   return (
     <>
     <section id="top" className="bg-white text-neutral-900">
-      <div className="mx-auto max-w-5xl px-6 pt-16 md:pt-24">
+      {/* pt deja aire para la navbar fija (h-14 en móvil, h-20 editorial en desktop) */}
+      <div className="mx-auto max-w-5xl px-6 pt-24 md:pt-32">
         <div className="flex flex-col items-center text-center">
           <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-900">
             Alquiler de maquinaria para construcción

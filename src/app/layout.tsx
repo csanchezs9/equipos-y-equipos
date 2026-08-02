@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/smooth-scroll";
-import { FloatingNav } from "@/components/floating-nav";
+import { SiteNav } from "@/components/site-nav";
 import { Footer } from "@/components/footer";
 import { FloatingActionMenu } from "@/components/floating-action-menu";
 import { JsonLd } from "@/components/json-ld";
@@ -109,7 +109,7 @@ export default function RootLayout({
       <body className="min-h-full overflow-x-clip bg-ink text-bone grain">
         <JsonLd data={[organizationSchema, localBusinessSchema, websiteSchema]} />
         <SmoothScroll>
-          <FloatingNav />
+          <SiteNav />
           <main className="overflow-x-clip">{children}</main>
           <Footer />
           <FloatingActionMenu />
