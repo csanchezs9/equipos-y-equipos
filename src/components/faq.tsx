@@ -4,8 +4,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { FORMATO_VINCULACION } from "@/lib/utils";
 
-const FAQS = [
+const FAQS: {
+  q: string;
+  a: string;
+  link?: { label: string; href: string };
+}[] = [
   {
     q: "¿Despachan los equipos hasta la obra?",
     a: "Sí. Llevamos la maquinaria directo a tu obra en Medellín y el Valle de Aburrá, Pereira, Armenia y municipios cercanos. Coordinamos el despacho y la recogida cuando termines.",
@@ -20,7 +25,11 @@ const FAQS = [
   },
   {
     q: "¿Qué necesito para alquilar?",
-    a: "Para personas: cédula y un anticipo o garantía según el equipo. Para empresas: datos de facturación y orden de compra si la manejan. Te explicamos todo por WhatsApp en la cotización.",
+    a: "Para personas: cédula y un anticipo o garantía según el equipo. Para empresas: llenas el formato de vinculación con la razón social, el NIT, los datos de la obra y a dónde te mandamos la factura. Te explicamos todo por WhatsApp en la cotización.",
+    link: {
+      label: "Descargar el formato de vinculación (PDF)",
+      href: FORMATO_VINCULACION,
+    },
   },
   {
     q: "¿Ustedes operan los equipos o solo los alquilan?",
@@ -55,6 +64,31 @@ export function Faq() {
               <AccordionTrigger>{item.q}</AccordionTrigger>
               <AccordionContent className="text-base leading-7 text-neutral-500">
                 {item.a}
+                {item.link && (
+                  <a
+                    href={item.link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group mt-3 flex w-fit items-center gap-2 text-sm font-medium text-brand transition-colors hover:text-brand-deep"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <path d="M7 10l5 5 5-5" />
+                      <path d="M12 15V3" />
+                    </svg>
+                    {item.link.label}
+                  </a>
+                )}
               </AccordionContent>
             </AccordionItem>
           ))}

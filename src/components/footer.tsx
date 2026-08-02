@@ -1,9 +1,15 @@
 import Image from "next/image";
-import { SEDES, WHATSAPP_DISPLAY, EMAIL, waLink } from "@/lib/utils";
+import {
+  SEDES,
+  WHATSAPP_DISPLAY,
+  EMAIL,
+  FORMATO_VINCULACION,
+  DOCS_LEGALES,
+  waLink,
+} from "@/lib/utils";
 import { categories } from "@/data/catalog";
 
 const COL_A = categories.slice(0, 6);
-const COL_B = categories.slice(6, 12);
 
 const linkCls =
   "border-b border-transparent text-sm text-neutral-500 transition-all duration-300 ease-in-out hover:border-[#F58226] hover:text-neutral-900";
@@ -77,23 +83,21 @@ export function Footer() {
               </ul>
             </div>
 
-            {/* Más líneas */}
+            {/* Tratamiento de datos */}
             <div>
               <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-neutral-900">
-                Más líneas
+                Tratamiento de datos
               </h3>
               <ul className="space-y-3 text-sm">
-                {COL_B.map((c) => (
-                  <li key={c.slug}>
+                {DOCS_LEGALES.map((d) => (
+                  <li key={d.href}>
                     <a
-                      href={waLink(
-                        `Hola Equipos y Equipos, quiero cotizar la línea ${c.name}.`
-                      )}
+                      href={d.href}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={linkCls}
                     >
-                      {c.name}
+                      {d.label}
                     </a>
                   </li>
                 ))}
@@ -119,6 +123,16 @@ export function Footer() {
                 <li className="text-neutral-500">
                   {SEDES.map((s) => s.ciudad).join(" · ")}
                 </li>
+                <li className="pt-1">
+                  <a
+                    href={FORMATO_VINCULACION}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={linkCls}
+                  >
+                    Formato de vinculación (PDF)
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
@@ -129,11 +143,21 @@ export function Footer() {
               derechos reservados.
             </p>
             <div className="flex items-center gap-6">
-              <a href="#" className="transition-colors hover:text-neutral-900">
+              <a
+                href="/docs/politica-tratamiento-bases-datos.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-neutral-900"
+              >
                 Tratamiento de datos
               </a>
-              <a href="#" className="transition-colors hover:text-neutral-900">
-                Política de privacidad
+              <a
+                href="/docs/aviso-privacidad-bases-datos.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-neutral-900"
+              >
+                Aviso de privacidad
               </a>
             </div>
           </div>
