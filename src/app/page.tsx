@@ -8,34 +8,44 @@ import { Contacto } from "@/components/contacto";
 type Foto = { src: string; alt: string };
 type Texto = { title: string; desc: string };
 
-type Cell =
-  | ({ type: "image" } & Foto)
-  | ({ type: "text" } & Texto)
-  /**
-   * Par foto + texto que ocupa dos columnas y se comporta como una sola pieza:
-   * al pasar el mouse por CUALQUIERA de las dos, la foto se estira sobre el
-   * texto y cruza a `ancha`.
-   *
-   * Van juntas en un mismo item de la grilla y no como celdas sueltas porque
-   * group-hover necesita un ancestro común, y las celdas sueltas son hermanas.
-   * La alternativa era estado de React, que volvería client component a toda la
-   * home por un hover.
-   */
-  | { type: "duo"; foto: Foto; ancha: Foto; texto: Texto };
+/**
+ * Par foto + texto que ocupa dos columnas y se comporta como una sola pieza: al
+ * pasar el mouse por CUALQUIERA de las dos, la foto se estira sobre el texto y
+ * cruza a `ancha`.
+ *
+ * Van juntas en un mismo item de la grilla y no como celdas sueltas porque
+ * group-hover necesita un ancestro común, y las celdas sueltas serían hermanas.
+ * La alternativa era estado de React, que volvería client component a toda la
+ * home por un hover.
+ */
+type Par = {
+  foto: Foto;
+  ancha: Foto;
+  texto: Texto;
+  /** De qué lado va la foto. La expansión siempre va hacia el texto. */
+  fotoEn: "izq" | "der";
+};
 
-const CELLS: Cell[] = [
+// El orden importa: en la fila de abajo la foto va a la derecha del texto, así
+// que ahí la expansión tiene que ir hacia la izquierda.
+const PARES: Par[] = [
   {
-    type: "image",
-    src: "/fotos/pexels-michaela-st-3448542-22857379.jpg",
-    alt: "Andamios metálicos en altura",
+    fotoEn: "izq",
+    foto: {
+      src: "/fotos/pexels-michaela-st-3448542-22857379.jpg",
+      alt: "Andamios metálicos en altura",
+    },
+    ancha: {
+      src: "/fotos/andamio-fachada-arnes.jpg",
+      alt: "Operario con arnés montando andamio sobre la fachada de un edificio",
+    },
+    texto: {
+      title: "Andamios y alturas",
+      desc: "Andamios multidireccionales, tijera y colgantes, más equipos de tracción vertical para trabajar seguro en altura.",
+    },
   },
   {
-    type: "text",
-    title: "Andamios y alturas",
-    desc: "Andamios multidireccionales, tijera y colgantes, más equipos de tracción vertical para trabajar seguro en altura.",
-  },
-  {
-    type: "duo",
+    fotoEn: "izq",
     foto: {
       src: "/fotos/pexels-ritesh-arya-1423700-3097103.webp",
       alt: "Maquinaria de construcción",
@@ -50,24 +60,34 @@ const CELLS: Cell[] = [
     },
   },
   {
-    type: "text",
-    title: "Compactación",
-    desc: "Rodillos compactadores, ranas y vibrocompactadores para dejar suelos y bases firmes.",
+    fotoEn: "der",
+    foto: {
+      src: "/fotos/pexels-rahibyaqubov-23978113.webp",
+      alt: "Obra de construcción",
+    },
+    ancha: {
+      src: "/fotos/excavadora-cielo-tormenta.jpg",
+      alt: "Máquina sobre un terraplén de tierra bajo un cielo cargado",
+    },
+    texto: {
+      title: "Compactación",
+      desc: "Rodillos compactadores, ranas y vibrocompactadores para dejar suelos y bases firmes.",
+    },
   },
   {
-    type: "image",
-    src: "/fotos/pexels-rahibyaqubov-23978113.webp",
-    alt: "Obra de construcción",
-  },
-  {
-    type: "text",
-    title: "Corte y demolición",
-    desc: "Cortadoras de piso, compresores y martillos para corte y demolición precisa.",
-  },
-  {
-    type: "image",
-    src: "/fotos/pexels-sofoklis-saripanidis-13143901-31499725.webp",
-    alt: "Equipo de construcción",
+    fotoEn: "der",
+    foto: {
+      src: "/fotos/pexels-sofoklis-saripanidis-13143901-31499725.webp",
+      alt: "Equipo de construcción",
+    },
+    ancha: {
+      src: "/fotos/excavadora-atardecer.jpg",
+      alt: "Máquina moviendo tierra a contraluz al atardecer",
+    },
+    texto: {
+      title: "Corte y demolición",
+      desc: "Cortadoras de piso, compresores y martillos para corte y demolición precisa.",
+    },
   },
 ];
 
@@ -185,89 +205,86 @@ export default function Home() {
         </div>
 
         <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-          {CELLS.map((cell, i) => {
-            if (cell.type === "text") return <TarjetaTexto key={i} {...cell} />;
+          {PARES.map((par, i) => {
+            // El par entero es UN item de la grilla y el group vive acá, así el
+            // hover se dispara igual sobre la foto que sobre el texto. Adentro
+            // va una grilla de dos columnas que reproduce las medidas de la de
+            // afuera, así que el layout no cambia en ningún breakpoint.
+            const fotoIzq = par.fotoEn === "izq";
 
-            if (cell.type === "image")
-              return (
+            const foto = (
+              /* z-10: los items pintan en orden del DOM, sin esto el texto
+                 quedaría encima de la foto expandida cuando la foto va primero.
+                 Va permanente y no solo en hover, porque si el z se fuera al
+                 soltar, la foto se escondería a mitad del repliegue.
+                 El 200% resuelve contra la celda (el hijo es absolute): dos
+                 columnas justas, más el 1.25rem del gap-5.
+                 Solo en lg: con 1 o 2 columnas el par ya ocupa el ancho
+                 completo y no hay nada al lado que invadir. */
+              <div key="foto" className="relative z-10 aspect-[3/4]">
+                {/* El anclaje decide hacia dónde crece: con la foto a la
+                    izquierda se fija left-0 y el borde derecho avanza; con la
+                    foto a la derecha se fija right-0 y avanza el izquierdo. */}
                 <div
-                  key={i}
-                  className="relative aspect-[3/4] overflow-hidden rounded-xl bg-neutral-100"
+                  className={`absolute top-0 h-full w-full overflow-hidden rounded-xl bg-neutral-100 transition-[width] duration-500 [transition-timing-function:var(--ease-out-expo)] lg:group-hover:w-[calc(200%+1.25rem)] ${
+                    fotoIzq ? "left-0" : "right-0"
+                  }`}
                 >
                   <Image
-                    src={cell.src}
-                    alt={cell.alt}
+                    src={par.foto.src}
+                    alt={par.foto.alt}
                     fill
                     sizes="(max-width: 768px) 100vw, 25vw"
-                    className="object-cover"
+                    className="object-cover transition-opacity duration-500 lg:group-hover:opacity-0"
                   />
-                </div>
-              );
+                  <Image
+                    src={par.ancha.src}
+                    alt=""
+                    aria-hidden
+                    fill
+                    sizes="(min-width: 1024px) 50vw, 25vw"
+                    className="object-cover opacity-0 transition-opacity duration-500 lg:group-hover:opacity-100"
+                  />
 
-            // duo: el par entero es UN item de la grilla y el group vive acá,
-            // así el hover se dispara igual sobre la foto que sobre el texto.
-            // Adentro va una grilla de dos columnas que reproduce exactamente
-            // las medidas de la de afuera, así que el layout no cambia.
+                  {/* Título y CTA sobre la foto expandida. Devuelve el link que
+                      la foto tapaba al crecer sobre la tarjeta.
+                      aria-hidden + tabIndex -1: duplica el link que ya está en
+                      la tarjeta de al lado, así no se anuncia dos veces ni se
+                      puede tabular a algo invisible. Solo mouse. */}
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 flex flex-col justify-end opacity-0 transition-opacity duration-500 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/85 via-neutral-950/25 to-transparent" />
+                    <div className="relative p-7 md:p-8">
+                      <h3 className="font-sans text-2xl font-medium tracking-tight text-white">
+                        {par.texto.title}
+                      </h3>
+                      <a
+                        href={waLink(
+                          `Hola Equipos y Equipos, quiero información sobre ${par.texto.title}.`
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        tabIndex={-1}
+                        className="mt-3 inline-block text-sm font-medium text-white underline underline-offset-4 transition-colors hover:text-hazard"
+                      >
+                        Más información
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+
+            const texto = <TarjetaTexto key="texto" {...par.texto} />;
+
             return (
               <div key={i} className="group md:col-span-2">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-5">
-                  {/* z-10: los items pintan en orden del DOM, sin esto el texto
-                      quedaría encima de la foto expandida. Va permanente y no
-                      solo en hover, porque si el z se fuera al soltar, la foto
-                      se escondería a mitad del repliegue.
-                      El 200% resuelve contra la celda (el hijo es absolute):
-                      dos columnas justas, más el 1.25rem del gap-5.
-                      Solo en lg: con 1 o 2 columnas el par ya ocupa el ancho
-                      completo y no hay nada al lado que invadir. */}
-                  <div className="relative z-10 aspect-[3/4]">
-                    <div className="absolute left-0 top-0 h-full w-full overflow-hidden rounded-xl bg-neutral-100 transition-[width] duration-500 [transition-timing-function:var(--ease-out-expo)] lg:group-hover:w-[calc(200%+1.25rem)]">
-                      <Image
-                        src={cell.foto.src}
-                        alt={cell.foto.alt}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 25vw"
-                        className="object-cover transition-opacity duration-500 lg:group-hover:opacity-0"
-                      />
-                      <Image
-                        src={cell.ancha.src}
-                        alt=""
-                        aria-hidden
-                        fill
-                        sizes="(min-width: 1024px) 50vw, 25vw"
-                        className="object-cover opacity-0 transition-opacity duration-500 lg:group-hover:opacity-100"
-                      />
-
-                      {/* Título y CTA sobre la foto expandida. Devuelve el link
-                          que la foto tapaba al crecer sobre la tarjeta.
-                          aria-hidden + tabIndex -1: duplica el link que ya está
-                          en la tarjeta de abajo, así no se anuncia dos veces ni
-                          se puede tabular a algo invisible. Solo mouse. */}
-                      <div
-                        aria-hidden
-                        className="pointer-events-none absolute inset-0 flex flex-col justify-end opacity-0 transition-opacity duration-500 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100"
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/85 via-neutral-950/25 to-transparent" />
-                        <div className="relative p-7 md:p-8">
-                          <h3 className="font-sans text-2xl font-medium tracking-tight text-white">
-                            {cell.texto.title}
-                          </h3>
-                          <a
-                            href={waLink(
-                              `Hola Equipos y Equipos, quiero información sobre ${cell.texto.title}.`
-                            )}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            tabIndex={-1}
-                            className="mt-3 inline-block text-sm font-medium text-white underline underline-offset-4 transition-colors hover:text-hazard"
-                          >
-                            Más información
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <TarjetaTexto {...cell.texto} />
+                  {/* El orden del DOM define el lado en desktop y el apilado en
+                      móvil, igual que antes de agrupar los pares. */}
+                  {fotoIzq ? [foto, texto] : [texto, foto]}
                 </div>
               </div>
             );
