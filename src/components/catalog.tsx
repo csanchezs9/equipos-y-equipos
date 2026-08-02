@@ -270,7 +270,7 @@ export function Catalog() {
           <span
             ref={pastillaRef}
             aria-hidden
-            className="invisible absolute left-0 top-0 rounded-full border border-hazard bg-neutral-900"
+            className="invisible absolute left-0 top-0 rounded-full border border-hazard bg-[#F5F5F4]"
           />
           {tabs.map((t) => {
             const on = group === t;
@@ -285,7 +285,7 @@ export function Catalog() {
               >
                 <span
                   className={`relative z-10 transition-colors ${
-                    on ? "text-white" : "text-neutral-500 hover:text-neutral-900"
+                    on ? "text-neutral-950" : "text-neutral-500 hover:text-neutral-900"
                   }`}
                 >
                   {label}
