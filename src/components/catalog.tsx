@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { categories, products } from "@/data/catalog";
 import { waLink } from "@/lib/utils";
@@ -321,13 +322,9 @@ export function Catalog() {
 
               <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-5">
                 {items.map((p) => (
-                  <a
+                  <Link
                     key={p.id}
-                    href={waLink(
-                      `Hola Equipos y Equipos, quiero cotizar el alquiler de: ${p.name}.`
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href={`/equipos/${p.slug}`}
                     className="group flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-neutral-300 hover:shadow-lg"
                   >
                     <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-neutral-50 via-neutral-100 to-neutral-200">
@@ -350,7 +347,7 @@ export function Catalog() {
                       </h3>
                       <p className="mt-1 text-xs text-neutral-400">{cat.name}</p>
                       <span className="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-medium text-neutral-400 transition-colors group-hover:text-neutral-900">
-                        Cotizar
+                        Ver ficha
                         <svg
                           width="15"
                           height="15"
@@ -369,7 +366,7 @@ export function Catalog() {
                         </svg>
                       </span>
                     </div>
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>

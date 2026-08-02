@@ -240,23 +240,29 @@ const itemVariants: Variants = {
 // `nombre` es el del catálogo; `label` es la versión corta para la tarjeta.
 // Elegidas por encuadre: las cuatro llenan el cuadro, van centradas y no
 // tienen personas dentro (compresor.png y rana.png sí, y descuadran la grilla).
+// `slug` es el del producto en catalog.ts: la tarjeta lleva a su ficha.
+// `label` es la versión corta, porque el nombre del catálogo no entra.
 const DESTACADOS = [
   {
+    slug: "mini-cargador-caterpillar-236b2-con-pala",
     label: "Mini-cargador",
     linea: "Mini-cargadores",
     image: "/equipos/minicargador-con-pala.png",
   },
   {
+    slug: "rodillo-compactador-dd-24-ingersoll-rand",
     label: "Rodillo compactador",
     linea: "Rodillos compactadores",
     image: "/equipos/dd24.png",
   },
   {
+    slug: "cortadora-de-piso",
     label: "Cortadora de piso",
     linea: "Cortadoras",
     image: "/equipos/cortadora-de-piso.png",
   },
   {
+    slug: "allanadoras-de-36-con-aspas",
     label: "Allanadora",
     linea: "Allanadoras",
     image: "/equipos/allanadora-con-aspas.png",
@@ -295,10 +301,22 @@ export function SiteNav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // data-nav-open en <html> es lo que dispara el empuje del contenido
+  // (.nav-push / .nav-push-fixed en globals.css). Lenis se para de verdad con
+  // stop(): con solo overflow:hidden el smooth scroll sigue corriendo detrás.
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
+    const root = document.documentElement;
+    const lenis = getLenis();
+    if (open) {
+      root.dataset.navOpen = "true";
+      lenis?.stop();
+    } else {
+      delete root.dataset.navOpen;
+      lenis?.start();
+    }
     return () => {
-      document.body.style.overflow = "";
+      delete root.dataset.navOpen;
+      getLenis()?.start();
     };
   }, [open]);
 
@@ -346,7 +364,10 @@ export function SiteNav() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-[70] flex justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.5rem)] sm:px-4 sm:pt-[calc(env(safe-area-inset-top)+0.7rem)]">
+      {/* nav-push-fixed: la barra se corre con el resto del contenido, así el
+          empuje se lee como una sola pieza y no queda flotando sobre el panel.
+          Seguro porque el header no usa utilidades translate-* propias. */}
+      <header className="nav-push-fixed fixed inset-x-0 top-0 z-[70] flex justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.5rem)] sm:px-4 sm:pt-[calc(env(safe-area-inset-top)+0.7rem)]">
         <div
           ref={barRef}
           className={`relative flex h-14 w-full max-w-3xl items-center gap-2 rounded-full border border-neutral-200 bg-white/90 pl-4 pr-2 shadow-lg shadow-neutral-900/[0.07] backdrop-blur-xl transition-[max-width,height,background-color,border-color,box-shadow,border-radius,padding] duration-500 [transition-timing-function:var(--ease-out-expo)] ${
@@ -511,147 +532,156 @@ export function SiteNav() {
         </div>
       </header>
 
-      {/* Menú fullscreen. Va en portal a <body> para escapar stacking contexts;
-          el fondo blanco es una capa fija sin scroll (el contenido scrollea
-          aparte) para que iOS lo pinte bajo la Dynamic Island. */}
+      {/* Panel lateral. Va en portal a <body> para escapar stacking contexts.
+          Se queda SIEMPRE montado y se mueve con una transición CSS, no con
+          AnimatePresence: así usa exactamente la misma duración y easing que el
+          empuje del contenido (.nav-push en globals.css) y las dos capas viajan
+          pegadas. Con montaje/desmontaje era imposible sincronizarlas. */}
       {isClient &&
         createPortal(
-          <AnimatePresence>
-            {open ? (
-              <motion.div
-                key="menu"
-                variants={menuVariants}
-                initial="closed"
-                animate="open"
-                exit="closed"
-                className="fixed inset-0 z-[60] bg-white"
-              >
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(120%_80%_at_50%_-20%,rgba(43,143,217,0.14),transparent_70%)]"
-                />
+          <>
+            {/* Capa transparente: clic sobre el contenido corrido para cerrar.
+                Sin oscurecer, para que el empuje se lea como empuje y no como
+                un modal con backdrop. */}
+            <div
+              aria-hidden
+              onClick={() => setOpen(false)}
+              className={`fixed inset-0 z-[62] ${open ? "" : "pointer-events-none"}`}
+            />
 
-                {/* data-lenis-prevent: si no, Lenis se traga el wheel y el
-                    menú no scrollea. */}
-                <div
-                  data-lenis-prevent
-                  className="absolute inset-0 overflow-y-auto"
+            <aside
+              aria-label="Menú"
+              inert={!open}
+              className={`fixed right-0 top-0 z-[65] flex h-full w-[var(--nav-panel-w)] flex-col border-l border-neutral-200 bg-white shadow-2xl shadow-neutral-950/10 transition-transform duration-700 [transition-timing-function:var(--ease-out-expo)] ${
+                open ? "translate-x-0" : "translate-x-full"
+              }`}
+            >
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(120%_80%_at_50%_-20%,rgba(43,143,217,0.14),transparent_70%)]"
+              />
+
+              {/* Cerrar propio del panel: en móvil el panel ocupa 100vw y la
+                  píldora queda fuera de pantalla, así que su X no alcanza. */}
+              <div className="relative flex justify-end px-5 pt-[calc(env(safe-area-inset-top)+1rem)] sm:px-7">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  aria-label="Cerrar menú"
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-900 transition-colors hover:bg-neutral-100"
                 >
-                  {/* Todo se dimensiona contra el alto del viewport (clamp con
-                      vh) para que el menú entre en una pantalla sin scroll ni
-                      desborde. El overflow-y-auto queda solo de red por si
-                      alguien está en una ventana absurdamente baja. */}
-                  <div className="relative flex min-h-full flex-col px-6 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-[calc(env(safe-area-inset-top)+4.75rem)] sm:px-10 lg:px-16 xl:px-24">
-                    <nav className="min-h-0 flex-1" aria-label="Menú principal">
-                      <motion.p
+                  <MenuToggle open />
+                </button>
+              </div>
+
+              {/* data-lenis-prevent: si no, Lenis se traga el wheel y el panel
+                  no scrollea. */}
+              <motion.div
+                data-lenis-prevent
+                variants={menuVariants}
+                initial={false}
+                animate={open ? "open" : "closed"}
+                className="relative flex flex-1 flex-col overflow-y-auto overscroll-contain px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-2 sm:px-7"
+              >
+                <nav className="flex-1" aria-label="Menú principal">
+                  <motion.p variants={itemVariants} className="kicker mb-3 text-sm">
+                    Navegar
+                  </motion.p>
+
+                  <ul className="flex flex-col items-start">
+                    {NAV_LINKS.map((l) => (
+                      <motion.li
+                        key={l.label}
                         variants={itemVariants}
-                        className="kicker mb-[clamp(0.5rem,1.8vh,1.5rem)] text-sm"
+                        className="py-[clamp(0.1rem,0.5vh,0.4rem)]"
                       >
-                        Navegar
-                      </motion.p>
-
-                      <ul className="flex flex-col items-start">
-                        {NAV_LINKS.map((l) => (
-                          <motion.li
-                            key={l.label}
-                            variants={itemVariants}
-                            className="py-[clamp(0.1rem,0.5vh,0.45rem)]"
-                          >
-                            {/* Hover: la palabra se repinta de izquierda a
-                                derecha. Dos capas idénticas superpuestas; la de
-                                arriba va en azul y se revela animando su ancho
-                                de 0 a 100%. Mismo lenguaje que ScrollPaintText,
-                                pero CSS puro. */}
-                            <Link
-                              href={l.href}
-                              onClick={(e) => onNav(e, l.href)}
-                              className="group relative inline-block font-sans text-[clamp(1.4rem,5vh,3.75rem)] font-semibold leading-[1.1] tracking-tight"
-                            >
-                              <span className="text-neutral-950">{l.label}</span>
-                              <span
-                                aria-hidden
-                                className="absolute left-0 top-0 w-0 overflow-hidden whitespace-nowrap text-brand transition-[width] duration-[600ms] [transition-timing-function:var(--ease-out-expo)] group-hover:w-full"
-                              >
-                                {l.label}
-                              </span>
-                            </Link>
-                          </motion.li>
-                        ))}
-                      </ul>
-                    </nav>
-
-                    {/* Franja de destacados al pie, a lo ancho. Los cutouts del
-                        catálogo son 400x400 sin alfa (fondo blanco), así que la
-                        tarjeta va blanca: cualquier panel tintado dejaría ver
-                        el recuadro de la imagen. */}
-                    <motion.div
-                      variants={itemVariants}
-                      className="mt-[clamp(1rem,3vh,3rem)] shrink-0 border-t border-neutral-200 pt-[clamp(0.75rem,2vh,1.75rem)]"
-                    >
-                      <div className="flex items-baseline justify-between gap-4">
-                        <p className="kicker text-sm">Equipos destacados</p>
+                        {/* Hover: la palabra se repinta de izquierda a derecha.
+                            Dos capas idénticas superpuestas; la de arriba va en
+                            azul y se revela animando su ancho de 0 a 100%.
+                            Mismo lenguaje que ScrollPaintText, pero CSS puro. */}
                         <Link
-                          href="/equipos"
-                          onClick={() => setOpen(false)}
-                          className="group inline-flex items-center gap-1.5 text-sm font-medium text-neutral-600 transition-colors hover:text-brand"
+                          href={l.href}
+                          onClick={(e) => onNav(e, l.href)}
+                          className="group relative inline-block font-sans text-[clamp(1.5rem,4vh,2.25rem)] font-semibold leading-[1.15] tracking-tight"
                         >
-                          Ver el catálogo
+                          <span className="text-neutral-950">{l.label}</span>
                           <span
                             aria-hidden
-                            className="transition-transform duration-300 [transition-timing-function:var(--ease-out-expo)] group-hover:translate-x-1"
+                            className="absolute left-0 top-0 w-0 overflow-hidden whitespace-nowrap text-brand transition-[width] duration-[600ms] [transition-timing-function:var(--ease-out-expo)] group-hover:w-full"
                           >
-                            &rarr;
+                            {l.label}
                           </span>
                         </Link>
-                      </div>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </nav>
 
-                      {/* A sangre: los márgenes negativos anulan el padding del
-                          contenedor para que las tarjetas lleguen a los bordes
-                          y cada equipo gane ancho. gap-px sobre fondo gris deja
-                          las hairlines entre tarjetas sin usar borders.
-                          Siempre una sola fila: dos filas en móvil pasaban de
-                          alto. */}
-                      <div className="-mx-6 mt-[clamp(0.6rem,1.6vh,1.25rem)] grid grid-cols-4 gap-px bg-neutral-200 sm:-mx-10 lg:-mx-16 xl:-mx-24">
-                        {DESTACADOS.map((d) => (
-                          <Link
-                            key={d.label}
-                            href="/equipos"
-                            onClick={() => setOpen(false)}
-                            className="group block bg-white"
-                          >
-                            {/* Altura explícita, NO aspect-square + max-h: con
-                                aspect-ratio las restricciones max se transfieren
-                                a través del ratio, así que el max-h también
-                                limitaba el ancho y la caja quedaba cuadrada y
-                                pegada a la izquierda de la tarjeta. Con h fija
-                                la caja ocupa todo el ancho y el flex centra. */}
-                            <div className="flex h-[clamp(7rem,32vh,22rem)] w-full items-center justify-center overflow-hidden p-2 sm:p-4">
-                              <Image
-                                src={d.image}
-                                alt={d.label}
-                                width={400}
-                                height={400}
-                                sizes="25vw"
-                                className="h-auto max-h-full w-auto max-w-full object-contain transition-transform duration-500 [transition-timing-function:var(--ease-out-expo)] group-hover:scale-105"
-                              />
-                            </div>
-                            <div className="px-3 pb-3 sm:px-5 sm:pb-5">
-                              <p className="truncate font-sans text-xs font-semibold tracking-tight text-neutral-950 sm:text-base">
-                                {d.label}
-                              </p>
-                              <p className="mt-0.5 hidden truncate text-xs text-neutral-500 sm:block">
-                                {d.linea}
-                              </p>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </motion.div>
+                {/* Destacados. En el panel angosto van 2x2, no 4 en fila. Los
+                    cutouts del catálogo son 400x400 sin alfa (fondo blanco), así
+                    que la tarjeta va blanca: un panel tintado dejaría ver el
+                    recuadro de la imagen. */}
+                <motion.div
+                  variants={itemVariants}
+                  className="mt-6 shrink-0 border-t border-neutral-200 pt-5"
+                >
+                  <div className="flex items-baseline justify-between gap-4">
+                    <p className="kicker text-sm">Equipos destacados</p>
+                    <Link
+                      href="/equipos"
+                      onClick={() => setOpen(false)}
+                      className="group inline-flex items-center gap-1.5 text-sm font-medium text-neutral-600 transition-colors hover:text-brand"
+                    >
+                      Ver el catálogo
+                      <span
+                        aria-hidden
+                        className="transition-transform duration-300 [transition-timing-function:var(--ease-out-expo)] group-hover:translate-x-1"
+                      >
+                        &rarr;
+                      </span>
+                    </Link>
                   </div>
-                </div>
+
+                  {/* A sangre dentro del panel: los márgenes negativos anulan su
+                      padding. gap-px sobre fondo gris dibuja las hairlines sin
+                      usar borders. */}
+                  <div className="-mx-5 mt-4 grid grid-cols-2 gap-px bg-neutral-200 sm:-mx-7">
+                    {DESTACADOS.map((d) => (
+                      <Link
+                        key={d.slug}
+                        href={`/equipos/${d.slug}`}
+                        onClick={() => setOpen(false)}
+                        className="group block bg-white"
+                      >
+                        {/* Altura explícita, NO aspect-square + max-h: con
+                            aspect-ratio las restricciones max se transfieren a
+                            través del ratio, así que el max-h limitaba también
+                            el ancho y la caja quedaba pegada a la izquierda. */}
+                        <div className="flex h-[clamp(6rem,15vh,10rem)] w-full items-center justify-center overflow-hidden p-3">
+                          <Image
+                            src={d.image}
+                            alt={d.label}
+                            width={400}
+                            height={400}
+                            sizes="(min-width: 640px) 16rem, 50vw"
+                            className="h-auto max-h-full w-auto max-w-full object-contain transition-transform duration-500 [transition-timing-function:var(--ease-out-expo)] group-hover:scale-105"
+                          />
+                        </div>
+                        <div className="px-4 pb-4">
+                          <p className="truncate font-sans text-sm font-semibold tracking-tight text-neutral-950">
+                            {d.label}
+                          </p>
+                          <p className="mt-0.5 truncate text-xs text-neutral-500">
+                            {d.linea}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </motion.div>
               </motion.div>
-            ) : null}
-          </AnimatePresence>,
+            </aside>
+          </>,
           document.body
         )}
     </>
