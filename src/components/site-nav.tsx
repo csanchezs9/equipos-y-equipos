@@ -406,7 +406,10 @@ export function SiteNav() {
       {/* nav-push-fixed: la barra se corre con el resto del contenido, así el
           empuje se lee como una sola pieza y no queda flotando sobre el panel.
           Seguro porque el header no usa utilidades translate-* propias. */}
-      <header className="nav-push-fixed fixed inset-x-0 top-0 z-[70] flex justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.5rem)] sm:px-4 sm:pt-[calc(env(safe-area-inset-top)+0.7rem)]">
+      <header
+        data-analytics-zone="navbar"
+        className="nav-push-fixed fixed inset-x-0 top-0 z-[70] flex justify-center px-3 pt-[calc(env(safe-area-inset-top)+0.5rem)] sm:px-4 sm:pt-[calc(env(safe-area-inset-top)+0.7rem)]"
+      >
         <div
           ref={barRef}
           className={`relative flex h-14 w-full max-w-3xl items-center gap-2 rounded-full border border-neutral-200 bg-white/90 pl-4 pr-2 shadow-lg shadow-neutral-900/[0.07] backdrop-blur-xl transition-[max-width,height,background-color,border-color,box-shadow,border-radius,padding] duration-500 [transition-timing-function:var(--ease-out-expo)] ${
@@ -590,6 +593,7 @@ export function SiteNav() {
 
             <aside
               aria-label="Menú"
+              data-analytics-zone="menu"
               inert={!open}
               className={`fixed right-0 top-0 z-[65] flex h-full w-[var(--nav-panel-w)] flex-col border-l border-neutral-200 bg-white shadow-2xl shadow-neutral-950/10 transition-transform duration-700 [transition-timing-function:var(--ease-out-expo)] ${
                 open ? "translate-x-0" : "translate-x-full"

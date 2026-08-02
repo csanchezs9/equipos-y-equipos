@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { categories, products } from "@/data/catalog";
 import { grupoDeCategoria } from "@/data/grupos";
 import { JsonLd } from "@/components/json-ld";
+import { productSchema, breadcrumbSchema } from "@/lib/schema";
 import { SEDES, WHATSAPP_DISPLAY, WHATSAPP, waLink } from "@/lib/utils";
 
 // Todas las fichas se prerenderizan; un slug que no exista da 404 en vez de
@@ -41,9 +42,10 @@ export async function generateMetadata({
       title: `${p.name} en alquiler`,
       description,
       url: `/equipos/${p.slug}`,
-      ...(p.image
-        ? { images: [{ url: p.image, width: 400, height: 400, alt: p.name }] }
-        : {}),
+      // Sin `images`: las pone opengraph-image.tsx de este mismo segmento, que
+      // arma una tarjeta 1200x630 con la foto del equipo. Declararlas acá
+      // pisaría esa convención y volvería a mandar el PNG de 400x400 suelto,
+      // que WhatsApp muestra como miniatura cuadrada diminuta.
     },
     keywords: [
       `alquiler ${p.name}`,
@@ -77,17 +79,18 @@ export default async function FichaEquipo({
     `Hola Equipos y Equipos, quiero cotizar el alquiler de: ${p.name}.`
   );
 
-  // Schema.org: es un alquiler, no una venta, y no publicamos precios. Por eso
-  // el Product va sin offers; inventar un price seria dato falso.
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: p.name,
-    description: p.description,
-    ...(p.image ? { image: `https://equiposyequipos.com.co${p.image}` } : {}),
-    category: lineaNombre,
-    brand: { "@type": "Brand", name: "Equipos y Equipos S.A.S." },
-  };
+  // Product + BreadcrumbList, los dos desde src/lib/schema.ts para que el
+  // origen absoluto salga de un solo lado. El breadcrumb refleja las migas de
+  // abajo: Google las usa para mostrar la ruta en el resultado en vez de la URL
+  // cruda.
+  const schema = [
+    productSchema(p),
+    breadcrumbSchema([
+      { name: "Equipos", path: "/equipos" },
+      { name: lineaNombre, path: `/equipos?cat=${lineaSlug}` },
+      { name: p.name, path: `/equipos/${p.slug}` },
+    ]),
+  ];
 
   return (
     <section className="bg-white text-neutral-900">

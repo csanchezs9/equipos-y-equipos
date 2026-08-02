@@ -3,8 +3,8 @@
 // quiénes somos, dónde y a quién atendemos).
 import { EMAIL } from "@/lib/utils";
 import type { Product } from "@/data/catalog";
+import { SITE_URL } from "@/lib/site";
 
-export const SITE_URL = "https://equiposyequipos.com.co";
 const ORG_ID = `${SITE_URL}/#organization`;
 const BIZ_ID = `${SITE_URL}/#localbusiness`;
 
@@ -110,45 +110,25 @@ export const websiteSchema = {
   publisher: { "@id": ORG_ID },
 };
 
-// FAQ para GEO: que los motores generativos respondan lo esencial del negocio.
-export const faqSchema = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: [
-    {
+/**
+ * FAQPage a partir de las preguntas que de verdad se ven en la página.
+ *
+ * Es una función y no una constante a propósito: Google exige que el marcado de
+ * FAQ coincida con el contenido visible, y una lista escrita aparte se
+ * desincroniza sola en cuanto alguien edita el acordeón. La fuente es el array
+ * FAQS de src/components/faq.tsx.
+ */
+export function faqSchema(items: { q: string; a: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map(({ q, a }) => ({
       "@type": "Question",
-      name: "¿Dónde está Equipos y Equipos y a qué zonas llega?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Tenemos tres sedes: Medellín (Itagüí, San Fernando), Pereira y Armenia. Llevamos equipos al Valle de Aburrá, el Eje Cafetero y la región.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "¿Qué equipos de construcción alquilan?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Alquilamos maquinaria para concreto, compactación, elevación, generadores, compresores de aire, andamios y formaletas, iluminación y accesorios. Todos certificados y con mantenimiento.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "¿Entregan y recogen el equipo en la obra?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Sí. Coordinamos la logística de entrega y recogida en tu obra, y damos soporte técnico durante todo el alquiler.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "¿Cómo cotizo el alquiler de un equipo?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Escríbenos por WhatsApp o correo con el equipo y las fechas. Respondemos rápido con disponibilidad, precio y entrega.",
-      },
-    },
-  ],
-};
+      name: q,
+      acceptedAnswer: { "@type": "Answer", text: a },
+    })),
+  };
+}
 
 export function breadcrumbSchema(items: { name: string; path: string }[]) {
   return {
@@ -175,14 +155,16 @@ export function productSchema(p: Product) {
       `Alquiler de ${p.name} para construcción en Medellín, Pereira y Armenia.`,
     ...(p.categoryNames[0] ? { category: p.categoryNames[0] } : {}),
     brand: { "@type": "Brand", name: "Equipos y Equipos" },
-    offers: {
-      "@type": "Offer",
-      url: `${SITE_URL}/equipos/${p.slug}`,
-      priceCurrency: "COP",
-      availability: "https://schema.org/InStock",
-      businessFunction: "http://purl.org/goodrelations/v1#LeaseOut",
-      seller: { "@id": ORG_ID },
-      areaServed: { "@type": "State", name: "Antioquia" },
-    },
+    url: `${SITE_URL}/equipos/${p.slug}`,
+    // Sin `offers` a propósito. El alquiler se cotiza caso por caso y no hay
+    // tarifa publicada; un Offer sin `price` no es "incompleto" para Google,
+    // es un error de validación. Mejor Product sin oferta (aviso menor) que
+    // Product con oferta inválida. Quién arrienda y dónde va acá abajo.
+    provider: { "@id": ORG_ID },
+    areaServed: [
+      { "@type": "State", name: "Antioquia" },
+      { "@type": "State", name: "Risaralda" },
+      { "@type": "State", name: "Quindío" },
+    ],
   };
 }

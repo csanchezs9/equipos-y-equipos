@@ -4,6 +4,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { JsonLd } from "@/components/json-ld";
+import { faqSchema } from "@/lib/schema";
 import { FORMATO_VINCULACION } from "@/lib/utils";
 
 const FAQS: {
@@ -44,6 +46,10 @@ const FAQS: {
 export function Faq() {
   return (
     <section id="faq" className="bg-white text-neutral-900">
+      {/* El marcado sale del mismo array que se pinta abajo, así no puede
+          quedar diciendo algo distinto a lo que el usuario lee. */}
+      <JsonLd data={faqSchema(FAQS)} />
+
       <div className="mx-auto max-w-3xl px-6 py-20 md:py-28">
         <div className="flex flex-col items-start text-left">
           <span className="rounded-full border border-hazard bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">

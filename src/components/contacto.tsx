@@ -2,17 +2,28 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { SEDES, WHATSAPP } from "@/lib/utils";
+import { SEDES, WHATSAPP, DOCS_LEGALES } from "@/lib/utils";
 import { TextAnimate } from "@/components/text-animate";
+
+// Ley 1581 de 2012: recoger nombre y teléfono es tratar datos personales, y el
+// titular tiene que autorizarlo de forma previa, expresa e informada. El
+// checkbox va sin marcar por defecto (si viniera marcado no es consentimiento)
+// y enlaza la política y el aviso que la empresa ya publica.
+const POLITICA = DOCS_LEGALES.find((d) =>
+  d.href.includes("politica-tratamiento")
+);
+const AVISO = DOCS_LEGALES.find((d) => d.href.includes("aviso-privacidad"));
 
 export function Contacto() {
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
   const [sede, setSede] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [autoriza, setAutoriza] = useState(false);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!autoriza) return;
     const partes = [
       `Hola Equipos y Equipos, soy ${nombre || "(sin nombre)"}.`,
       telefono ? `Mi teléfono: ${telefono}.` : "",
@@ -32,7 +43,11 @@ export function Contacto() {
       <div className="mx-auto max-w-6xl px-6 pb-20 pt-4 md:pb-28 md:pt-6">
         <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm md:grid md:grid-cols-2">
           {/* Imagen */}
-          <div className="relative min-h-[320px] md:min-h-full">
+          {/* En móvil la tarjeta apila y la foto manda: le damos su propia
+              relación 1024x1536 para que object-cover no recorte nada (la foto
+              trae texto quemado arriba y se estaba comiendo la primera línea).
+              Desde md vuelve a estirarse a la altura del formulario. */}
+          <div className="relative aspect-[2/3] md:aspect-auto md:min-h-full">
             <Image
               src="/contactanos/contacto.webp"
               alt="Equipo revisando planos en obra"
@@ -175,6 +190,47 @@ export function Contacto() {
                   placeholder="Equipo, fechas, lugar de la obra…"
                   className="w-full resize-none rounded-lg border border-neutral-200 bg-white px-3.5 py-3 text-base text-neutral-900 outline-none transition-all placeholder:text-neutral-400 focus:border-neutral-300 focus:ring-4 focus:ring-neutral-900/5"
                 />
+              </div>
+
+              <div className="flex items-start gap-2.5">
+                <input
+                  id="c-habeas"
+                  type="checkbox"
+                  required
+                  checked={autoriza}
+                  onChange={(e) => setAutoriza(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-neutral-300 accent-brand"
+                />
+                <label htmlFor="c-habeas" className="text-xs leading-5 text-neutral-500">
+                  Autorizo a Equipos y Equipos S.A.S. a tratar mis datos
+                  personales para responder esta solicitud, según su{" "}
+                  {POLITICA ? (
+                    <a
+                      href={POLITICA.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-neutral-900 underline underline-offset-2 hover:text-brand"
+                    >
+                      política de tratamiento de datos
+                    </a>
+                  ) : (
+                    "política de tratamiento de datos"
+                  )}
+                  {AVISO ? (
+                    <>
+                      {" y su "}
+                      <a
+                        href={AVISO.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-neutral-900 underline underline-offset-2 hover:text-brand"
+                      >
+                        aviso de privacidad
+                      </a>
+                    </>
+                  ) : null}
+                  .
+                </label>
               </div>
 
               <button

@@ -6,11 +6,13 @@ import { SiteNav } from "@/components/site-nav";
 import { Footer } from "@/components/footer";
 import { FloatingActionMenu } from "@/components/floating-action-menu";
 import { JsonLd } from "@/components/json-ld";
+import { Analitica } from "@/components/analytics";
 import {
   organizationSchema,
   localBusinessSchema,
   websiteSchema,
 } from "@/lib/schema";
+import { SITE_URL, INDEXABLE } from "@/lib/site";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -30,10 +32,14 @@ const space = Space_Grotesk({
   display: "swap",
 });
 
-const OG_IMAGE = "/fotos/pexels-ritesh-arya-1423700-3097103.webp";
+// La imagen de Open Graph NO se declara acá: la toman por convención de
+// src/app/opengraph-image.jpg y src/app/twitter-image.jpg, y así Next emite
+// og:image:type, :width y :height correctos. Antes se apuntaba a mano a un
+// .webp vertical de 2400x3601 declarado como 1200x630: WhatsApp no renderiza
+// webp y las medidas eran mentira. Se regenera con `node scripts/build-og.mjs`.
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://equiposyequipos.com.co"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Equipos y Equipos · Alquiler de equipos para construcción",
     template: "%s · Equipos y Equipos",
@@ -59,17 +65,21 @@ export const metadata: Metadata = {
     "equipos de compactación",
   ],
   alternates: { canonical: "/" },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
-    },
-  },
+  // Mientras viva en el dominio de Vercel es un demo y va cerrado. Ver
+  // src/lib/site.ts.
+  robots: INDEXABLE
+    ? {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          "max-image-preview": "large",
+          "max-snippet": -1,
+          "max-video-preview": -1,
+        },
+      }
+    : { index: false, follow: false, nocache: true },
   openGraph: {
     type: "website",
     locale: "es_CO",
@@ -78,14 +88,12 @@ export const metadata: Metadata = {
     title: "Equipos y Equipos · Alquiler de equipos para construcción",
     description:
       "Maquinaria certificada para tu obra en Itagüí, Medellín y todo Antioquia. Entrega en obra y soporte experto.",
-    images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: "Equipos y Equipos" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Equipos y Equipos · Alquiler de equipos para construcción",
     description:
       "Maquinaria certificada para tu obra en Itagüí, Medellín y todo Antioquia.",
-    images: [OG_IMAGE],
   },
   formatDetection: { telephone: true, email: true, address: true },
 };
@@ -120,6 +128,7 @@ export default function RootLayout({
           </div>
           <FloatingActionMenu />
         </SmoothScroll>
+        <Analitica />
       </body>
     </html>
   );
