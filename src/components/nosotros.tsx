@@ -1,6 +1,7 @@
 import { ScrollTiltedGrid } from "@/components/ui/scroll-tilted-grid";
+import { Stats, type Stat } from "@/components/stat-counter";
 
-const STATS = [
+const STATS: Stat[] = [
   { value: "3", label: "sedes: Medellín, Pereira y Armenia" },
   { value: "+12", label: "líneas de equipo para toda la obra" },
   { value: "24h", label: "respuesta para cotizar y despachar" },
@@ -23,18 +24,7 @@ export function Nosotros() {
           pendientes para que nada se te detenga.
         </p>
 
-        <dl className="mt-10 grid grid-cols-3 gap-4">
-          {STATS.map((s) => (
-            <div key={s.label} className="flex flex-col items-center">
-              <dt className="font-mono text-3xl font-semibold tabular-nums text-neutral-950 md:text-4xl">
-                {s.value}
-              </dt>
-              <dd className="mt-2 text-xs leading-5 text-neutral-500">
-                {s.label}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        <Stats stats={STATS} />
       </div>
 
       <ScrollTiltedGrid maxWidth="xl" gap={8} rounded="0.75rem" />
