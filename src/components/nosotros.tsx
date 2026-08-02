@@ -9,12 +9,17 @@ const STATS: Stat[] = [
 
 export function Nosotros() {
   return (
-    <section id="nosotros" className="relative overflow-hidden bg-white text-neutral-900">
-      {/* pt corto a propósito: la sección de arriba ya cierra con pb-20/pb-28,
-          y si acá abría con lo mismo los dos paddings se sumaban y dejaban
-          ~224px de blanco entre secciones. */}
-      <div className="mx-auto max-w-3xl px-6 pt-4 text-center md:pt-6">
-        <span className="rounded-full border border-hazard bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">
+    // Gris de fondo para cortar la seguidilla de secciones blancas. Ahora que
+    // hay un borde de color visible, el bloque necesita su propio aire arriba:
+    // con el pt-4 de antes el gris arrancaba pegado al título.
+    <section
+      id="nosotros"
+      className="relative overflow-hidden bg-[#F4F4F4] text-neutral-900"
+    >
+      <div className="mx-auto max-w-3xl px-6 pt-16 text-center md:pt-24">
+        {/* Pill en blanco, no en neutral-100: sobre el gris de la sección
+            quedaría del mismo tono y solo se vería el borde flotando. */}
+        <span className="rounded-full border border-hazard bg-white px-3 py-1 text-xs font-medium text-neutral-900">
           Nosotros
         </span>
         <h2 className="mt-5 font-sans text-4xl font-semibold tracking-normal text-neutral-950 md:text-5xl md:leading-tight">
@@ -30,7 +35,7 @@ export function Nosotros() {
         <Stats stats={STATS} />
       </div>
 
-      <ScrollTiltedGrid maxWidth="xl" gap={8} rounded="0.75rem" />
+      <ScrollTiltedGrid maxWidth="xl" gap={8} rounded="0.75rem" className="pb-8" />
     </section>
   );
 }
