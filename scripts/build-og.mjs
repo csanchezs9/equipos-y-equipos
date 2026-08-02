@@ -20,7 +20,7 @@ const ALTO = 630;
 // desenfoque leve: la obra se sigue reconociendo pero deja de competir.
 const VELO = 0.68;
 const DESENFOQUE = 2.5;
-const LOGO_ANCHO = 640;
+const LOGO_ANCHO = 760;
 
 // Azul de marca aclarado para fondo oscuro (--color-brand-glow del sitio). El
 // azul marino original es demasiado oscuro: sobre la foto ya velada queda en
