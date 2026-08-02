@@ -1,14 +1,10 @@
 "use client";
 
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useMotionTemplate,
-  useReducedMotion,
-  cubicBezier,
-} from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") gsap.registerPlugin(ScrollTrigger);
 
 /**
  * Fotos de obra propias de Equipos y Equipos. Locales en `public/fotos`,
@@ -25,12 +21,11 @@ export const DEFAULT_GRID_IMAGES: readonly string[] = [
   "/nosotros/shivendu-shukla-3yoTPuYR9ZY-unsplash.webp",
 ];
 
-const easeIntoFocus = cubicBezier(0.22, 1, 0.36, 1);
-const easeOutOfFocus = cubicBezier(0, 0, 0.58, 1);
-const focusEase: [typeof easeIntoFocus, typeof easeOutOfFocus] = [
-  easeIntoFocus,
-  easeOutOfFocus,
-];
+// Antes eran cubicBezier(0.22,1,0.36,1) y cubicBezier(0,0,0.58,1) de framer.
+// Equivalentes de GSAP: la entrada frena fuerte al llegar al foco, la salida
+// arranca suave. Al ir con scrub la diferencia entre curvas casi no se nota.
+const EASE_ENTRADA = "power4.out";
+const EASE_SALIDA = "power2.in";
 
 export type MaxWidthToken =
   | "sm"
@@ -82,78 +77,103 @@ function Tile({
   config: TileConfig;
 }) {
   const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress: p } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
+  const capaRef = useRef<HTMLDivElement>(null);
+  const fotoRef = useRef<HTMLDivElement>(null);
 
-  const reduce = useReducedMotion();
   const sign = side === "L" ? -1 : 1;
   const { aspectRatio, perspective, maxTilt, maxBlur, rounded } = config;
 
-  const blur     = useTransform(p, [0, 0.5, 1], [maxBlur, 0, maxBlur], { ease: focusEase });
-  const bright   = useTransform(p, [0, 0.5, 1], [0, 1, 0],             { ease: focusEase });
-  const contrast = useTransform(p, [0, 0.5, 1], [4, 1, 4],             { ease: focusEase });
+  // Antes era useScroll + useTransform de framer, que mapeaba el progreso del
+  // tile por el viewport a cada propiedad. Acá es una timeline con scrub, que
+  // hace lo mismo pero atada a ScrollTrigger, el que ya usa todo el sitio.
+  //
+  // El progreso va de "el tile entra por abajo" a "sale por arriba", con el
+  // foco limpio en el medio: dos tramos de la timeline, entrada y salida.
+  useEffect(() => {
+    const el = ref.current;
+    const capa = capaRef.current;
+    const foto = fotoRef.current;
+    if (!el || !capa || !foto) return;
 
-  const ty = useTransform(p, [0, 0.5, 1], ["100%", "0%", "-100%"], { ease: focusEase });
-  const tz = useTransform(p, [0, 0.5, 1], [300, 0, 300],           { ease: focusEase });
-  const rx = useTransform(p, [0, 0.5, 1], [maxTilt, 0, -maxTilt],  { ease: focusEase });
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      gsap.set([capa, foto], { clearProps: "all" });
+      return;
+    }
 
-  const tx = useTransform(p, [0, 0.5, 1],
-    [`${sign * 40}%`, "0%", `${sign * 40}%`], { ease: focusEase });
-  const rot = useTransform(p, [0, 0.5, 1], [-sign * 5, 0, sign * 5],   { ease: focusEase });
-  const sk  = useTransform(p, [0, 0.5, 1], [sign * 20, 0, -sign * 20], { ease: focusEase });
+    const ctx = gsap.context(() => {
+      const entrada = {
+        xPercent: sign * 40,
+        yPercent: 100,
+        z: 300,
+        rotate: -sign * 5,
+        rotateX: maxTilt,
+        skewX: sign * 20,
+        filter: `blur(${maxBlur}px) brightness(0) contrast(4)`,
+      };
+      const foco = {
+        xPercent: 0,
+        yPercent: 0,
+        z: 0,
+        rotate: 0,
+        rotateX: 0,
+        skewX: 0,
+        filter: "blur(0px) brightness(1) contrast(1)",
+      };
+      const salida = {
+        xPercent: sign * 40,
+        yPercent: -100,
+        z: 300,
+        rotate: sign * 5,
+        rotateX: -maxTilt,
+        skewX: -sign * 20,
+        filter: `blur(${maxBlur}px) brightness(0) contrast(4)`,
+      };
 
-  const innerSY = useTransform(p, [0, 0.5, 1], [1.8, 1, 1.8], { ease: focusEase });
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: el,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: true,
+        },
+      });
 
-  const filter = useMotionTemplate`blur(${blur}px) brightness(${bright}) contrast(${contrast})`;
+      tl.fromTo(capa, entrada, { ...foco, duration: 1, ease: EASE_ENTRADA })
+        .to(capa, { ...salida, duration: 1, ease: EASE_SALIDA })
+        .fromTo(
+          foto,
+          { scaleY: 1.8 },
+          { scaleY: 1, duration: 1, ease: EASE_ENTRADA },
+          0
+        )
+        .to(foto, { scaleY: 1.8, duration: 1, ease: EASE_SALIDA }, 1);
+    }, el);
 
-  if (reduce) {
-    return (
-      <figure ref={ref} className="relative z-10 m-0">
-        <div
-          className="relative w-full overflow-hidden"
-          style={{ aspectRatio, borderRadius: rounded }}
-        >
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url("${src}")` }}
-          />
-        </div>
-      </figure>
-    );
-  }
+    return () => ctx.revert();
+  }, [sign, maxTilt, maxBlur]);
 
   return (
-    <motion.figure
+    <figure
       ref={ref}
       className="relative z-10 m-0"
       style={{ perspective, willChange: "transform" }}
     >
-      <motion.div
+      <div
+        ref={capaRef}
         className="relative w-full overflow-hidden will-change-[filter,transform]"
-        style={{
-          aspectRatio,
-          borderRadius: rounded,
-          filter,
-          x: tx,
-          y: ty,
-          z: tz,
-          rotate: rot,
-          rotateX: rx,
-          skewX: sk,
-        }}
+        style={{ aspectRatio, borderRadius: rounded }}
       >
-        <motion.div
+        <div
+          ref={fotoRef}
           className="absolute inset-0 bg-cover bg-center will-change-transform"
           style={{
             backgroundImage: `url("${src}")`,
-            scaleY: innerSY,
             backfaceVisibility: "hidden",
           }}
         />
-      </motion.div>
-    </motion.figure>
+      </div>
+    </figure>
   );
 }
 

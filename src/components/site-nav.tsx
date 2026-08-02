@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion, type Variants } from "framer-motion";
+import { gsap } from "gsap";
 import { categories } from "@/data/catalog";
 import { SEDES, waLink } from "@/lib/utils";
 import { scrollToEl } from "@/components/smooth-scroll";
@@ -86,36 +86,51 @@ function Chevron({ className = "" }: { className?: string }) {
 }
 
 function MenuToggle({ open }: { open: boolean }) {
+  const arriba = useRef<SVGPathElement>(null);
+  const medio = useRef<SVGPathElement>(null);
+  const abajo = useRef<SVGPathElement>(null);
+
+  // GSAP interpola los números dentro del atributo `d`. Funciona porque las
+  // tres rectas tienen la misma estructura de comandos (M x y L x y): solo
+  // cambian las coordenadas.
+  useEffect(() => {
+    const t = gsap.timeline();
+    t.to(
+      arriba.current,
+      {
+        attr: { d: open ? "M5 5 L19 19" : "M3 7 L21 7" },
+        duration: 0.3,
+        ease: "expo.out",
+      },
+      0
+    )
+      .to(medio.current, { opacity: open ? 0 : 1, duration: 0.2 }, 0)
+      .to(
+        abajo.current,
+        {
+          attr: { d: open ? "M5 19 L19 5" : "M3 17 L21 17" },
+          duration: 0.3,
+          ease: "expo.out",
+        },
+        0
+      );
+    return () => {
+      t.kill();
+    };
+  }, [open]);
+
+  const linea = {
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+  };
+
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
-      <motion.path
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        initial={false}
-        animate={open ? { d: "M5 5 L19 19" } : { d: "M3 7 L21 7" }}
-        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      />
-      <motion.path
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        d="M3 12 L21 12"
-        initial={false}
-        animate={open ? { opacity: 0 } : { opacity: 1 }}
-        transition={{ duration: 0.2 }}
-      />
-      <motion.path
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        initial={false}
-        animate={open ? { d: "M5 19 L19 5" } : { d: "M3 17 L21 17" }}
-        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      />
+      <path ref={arriba} {...linea} d={open ? "M5 5 L19 19" : "M3 7 L21 7"} />
+      <path ref={medio} {...linea} d="M3 12 L21 12" opacity={open ? 0 : 1} />
+      <path ref={abajo} {...linea} d={open ? "M5 19 L19 5" : "M3 17 L21 17"} />
     </svg>
   );
 }
@@ -155,23 +170,22 @@ function Selector({
         />
       </button>
 
-      <AnimatePresence>
-        {open ? (
-          <motion.div
-            role="listbox"
-            aria-label={label}
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            className={`absolute left-0 top-[calc(100%+0.65rem)] z-50 ${width} overflow-hidden rounded-2xl border border-neutral-200 bg-white p-1.5 shadow-xl shadow-neutral-900/10`}
-          >
-            <div className="max-h-[19rem] overflow-y-auto overscroll-contain">
-              {children}
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+      {/* Siempre montado. invisible (visibility:hidden) lo saca del foco y del
+          árbol de accesibilidad, así se puede animar la salida sin coordinar un
+          desmontaje diferido. */}
+      <div
+        role="listbox"
+        aria-label={label}
+        className={`absolute left-0 top-[calc(100%+0.65rem)] z-50 ${width} overflow-hidden rounded-2xl border border-neutral-200 bg-white p-1.5 shadow-xl shadow-neutral-900/10 transition-all duration-200 [transition-timing-function:var(--ease-out-expo)] ${
+          open
+            ? "visible translate-y-0 opacity-100"
+            : "invisible -translate-y-1.5 opacity-0"
+        }`}
+      >
+        <div className="max-h-[19rem] overflow-y-auto overscroll-contain">
+          {children}
+        </div>
+      </div>
     </div>
   );
 }
@@ -208,27 +222,6 @@ function Opcion({
     </button>
   );
 }
-
-const menuVariants: Variants = {
-  closed: {
-    opacity: 0,
-    transition: { duration: 0.2, ease: [0.7, 0, 0.84, 0], when: "afterChildren" },
-  },
-  open: {
-    opacity: 1,
-    transition: {
-      duration: 0.25,
-      ease: [0.16, 1, 0.3, 1],
-      staggerChildren: 0.05,
-      delayChildren: 0.08,
-    },
-  },
-};
-
-const itemVariants: Variants = {
-  closed: { y: 18, opacity: 0, transition: { duration: 0.2 } },
-  open: { y: 0, opacity: 1, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
-};
 
 // Franja de destacados del menú. Selección a mano: el catálogo no tiene dato
 // de popularidad ni de alquileres, solo cuántos productos hay por línea.
@@ -285,6 +278,7 @@ export function SiteNav() {
   const [sede, setSede] = useState<string | null>(null);
 
   const barRef = useRef<HTMLDivElement>(null);
+  const contenidoRef = useRef<HTMLDivElement>(null);
   const isClient = useIsClient();
 
   // El estado editorial solo existe arriba del todo. 80px basta: apenas te
@@ -318,6 +312,43 @@ export function SiteNav() {
       delete root.dataset.navOpen;
       document.body.style.overflow = previo;
       document.body.style.paddingRight = "";
+    };
+  }, [open]);
+
+  // Stagger del contenido del panel. Reemplaza menuVariants/itemVariants: los
+  // hijos marcados con data-stagger entran en cascada al abrir y se repliegan
+  // al cerrar.
+  useEffect(() => {
+    const cont = contenidoRef.current;
+    if (!cont) return;
+
+    const items = cont.querySelectorAll<HTMLElement>("[data-stagger]");
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduce) {
+      gsap.set(items, { y: 0, opacity: 1 });
+      gsap.set(cont, { opacity: 1 });
+      return;
+    }
+
+    const tl = gsap.timeline();
+    if (open) {
+      tl.to(cont, { opacity: 1, duration: 0.25, ease: "expo.out" }, 0).fromTo(
+        items,
+        { y: 18, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, ease: "expo.out", stagger: 0.05 },
+        0.08
+      );
+    } else {
+      tl.to(items, { y: 18, opacity: 0, duration: 0.2 }, 0).to(
+        cont,
+        { opacity: 0, duration: 0.2 },
+        0
+      );
+    }
+
+    return () => {
+      tl.kill();
     };
   }, [open]);
 
@@ -531,10 +562,10 @@ export function SiteNav() {
       </header>
 
       {/* Panel lateral. Va en portal a <body> para escapar stacking contexts.
-          Se queda SIEMPRE montado y se mueve con una transición CSS, no con
-          AnimatePresence: así usa exactamente la misma duración y easing que el
-          empuje del contenido (.nav-push en globals.css) y las dos capas viajan
-          pegadas. Con montaje/desmontaje era imposible sincronizarlas. */}
+          Se queda SIEMPRE montado y se mueve con una transición CSS: así usa
+          exactamente la misma duración y easing que el empuje del contenido
+          (.nav-push en globals.css) y las dos capas viajan pegadas. Con
+          montaje/desmontaje era imposible sincronizarlas. */}
       {isClient &&
         createPortal(
           <>
@@ -572,22 +603,20 @@ export function SiteNav() {
                 </button>
               </div>
 
-              <motion.div
-                variants={menuVariants}
-                initial={false}
-                animate={open ? "open" : "closed"}
+              <div
+                ref={contenidoRef}
                 className="relative flex flex-1 flex-col overflow-y-auto overscroll-contain px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-2 sm:px-7"
               >
                 <nav className="flex-1" aria-label="Menú principal">
-                  <motion.p variants={itemVariants} className="kicker mb-3 text-sm">
+                  <p data-stagger className="kicker mb-3 text-sm">
                     Navegar
-                  </motion.p>
+                  </p>
 
                   <ul className="flex flex-col items-start">
                     {NAV_LINKS.map((l) => (
-                      <motion.li
+                      <li
                         key={l.label}
-                        variants={itemVariants}
+                        data-stagger
                         className="py-[clamp(0.1rem,0.5vh,0.4rem)]"
                       >
                         {/* Hover: la palabra se repinta de izquierda a derecha.
@@ -607,7 +636,7 @@ export function SiteNav() {
                             {l.label}
                           </span>
                         </Link>
-                      </motion.li>
+                      </li>
                     ))}
                   </ul>
                 </nav>
@@ -616,8 +645,8 @@ export function SiteNav() {
                     cutouts del catálogo son 400x400 sin alfa (fondo blanco), así
                     que la tarjeta va blanca: un panel tintado dejaría ver el
                     recuadro de la imagen. */}
-                <motion.div
-                  variants={itemVariants}
+                <div
+                  data-stagger
                   className="mt-6 shrink-0 border-t border-neutral-200 pt-5"
                 >
                   <div className="flex items-baseline justify-between gap-4">
@@ -673,8 +702,8 @@ export function SiteNav() {
                       </Link>
                     ))}
                   </div>
-                </motion.div>
-              </motion.div>
+                </div>
+              </div>
             </aside>
           </>,
           document.body

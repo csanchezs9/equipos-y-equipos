@@ -4,10 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
 import { categories, products } from "@/data/catalog";
 import { GRUPOS, grupoDeCategoria, grupoPorId } from "@/data/grupos";
 import { scrollToEl } from "@/components/smooth-scroll";
+import { useMovingPill } from "@/lib/use-moving-pill";
 import { waLink } from "@/lib/utils";
 
 // GRUPOS vive en @/data/grupos porque las fichas de equipo también lo usan
@@ -51,6 +51,8 @@ export function Catalog() {
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState<string>(grupoInicial);
   const [filterOpen, setFilterOpen] = useState(false);
+
+  const { contenedorRef, pastillaRef } = useMovingPill<HTMLDivElement>(group);
 
   // Baja hasta la sección de la categoría.
   //
@@ -145,18 +147,18 @@ export function Catalog() {
                   placeholder="Buscar equipo o línea…"
                   className="w-full rounded-full bg-transparent py-3.5 pl-12 pr-12 text-base text-neutral-900 outline-none placeholder:text-neutral-400"
                 />
-                <AnimatePresence>
-                  {query ? (
-                    <motion.button
-                      type="button"
-                      initial={{ opacity: 0, scale: 0.6 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.6 }}
-                      transition={{ duration: 0.15 }}
-                      onClick={() => setQuery("")}
-                      aria-label="Limpiar búsqueda"
-                      className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-100 text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-neutral-900"
-                    >
+                {/* Siempre montado: sale y entra con opacity+scale por CSS, sin
+                    necesitar coordinar un desmontaje diferido. */}
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  aria-label="Limpiar búsqueda"
+                  tabIndex={query ? 0 : -1}
+                  aria-hidden={!query}
+                  className={`absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-100 text-neutral-500 transition-all duration-150 hover:bg-neutral-200 hover:text-neutral-900 ${
+                    query ? "scale-100 opacity-100" : "pointer-events-none scale-50 opacity-0"
+                  }`}
+                >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
                         <path
                           d="M6 6l12 12M18 6L6 18"
@@ -165,9 +167,7 @@ export function Catalog() {
                           strokeLinecap="round"
                         />
                       </svg>
-                    </motion.button>
-                  ) : null}
-                </AnimatePresence>
+                </button>
               </div>
             </div>
           </div>
@@ -183,13 +183,13 @@ export function Catalog() {
             className="flex h-12 w-full items-center justify-between rounded-lg border border-neutral-200 bg-white px-4 text-base font-medium text-neutral-900 shadow-sm transition-colors hover:border-neutral-300"
           >
             <span>{group === "all" ? "Todas las líneas" : group}</span>
-            <motion.svg
+            <svg
               viewBox="0 0 24 24"
               fill="none"
               aria-hidden
-              animate={{ rotate: filterOpen ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-              className="h-5 w-5 text-neutral-400"
+              className={`h-5 w-5 text-neutral-400 transition-transform duration-200 ${
+                filterOpen ? "rotate-180" : ""
+              }`}
             >
               <path
                 d="M7 10l5 5 5-5"
@@ -198,26 +198,28 @@ export function Catalog() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
-            </motion.svg>
+            </svg>
           </button>
 
-          <AnimatePresence>
-            {filterOpen ? (
-              <>
-                <button
-                  type="button"
-                  aria-label="Cerrar filtro"
-                  onClick={() => setFilterOpen(false)}
-                  className="fixed inset-0 z-20 cursor-default"
-                />
-                <motion.ul
-                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                  style={{ originY: 0 }}
-                  className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-neutral-200 bg-white p-1.5 shadow-xl"
-                >
+          {filterOpen ? (
+            <button
+              type="button"
+              aria-label="Cerrar filtro"
+              onClick={() => setFilterOpen(false)}
+              className="fixed inset-0 z-20 cursor-default"
+            />
+          ) : null}
+
+          {/* Siempre montado. invisible (visibility:hidden) lo saca del foco y
+              del árbol de accesibilidad, así no hace falta desmontarlo para
+              poder animar la salida. */}
+          <ul
+            className={`absolute left-0 right-0 top-full z-30 mt-2 origin-top overflow-hidden rounded-xl border border-neutral-200 bg-white p-1.5 shadow-xl transition-all duration-200 [transition-timing-function:var(--ease-out-expo)] ${
+              filterOpen
+                ? "visible translate-y-0 scale-100 opacity-100"
+                : "invisible -translate-y-1.5 scale-[0.98] opacity-0"
+            }`}
+          >
                   {tabs.map((t) => {
                     const on = group === t;
                     return (
@@ -255,14 +257,21 @@ export function Catalog() {
                       </li>
                     );
                   })}
-                </motion.ul>
-              </>
-            ) : null}
-          </AnimatePresence>
+          </ul>
         </div>
 
-        {/* Desktop: segmented control con pastilla deslizante */}
-        <div className="mt-6 hidden flex-wrap gap-1 rounded-full bg-neutral-100 p-1 sm:inline-flex">
+        {/* Desktop: segmented control con pastilla deslizante. Una sola
+            pastilla absoluta que viaja hasta el botón activo (ver
+            useMovingPill), en vez de una por botón compartiendo layoutId. */}
+        <div
+          ref={contenedorRef}
+          className="relative mt-6 hidden flex-wrap gap-1 rounded-full bg-neutral-100 p-1 sm:inline-flex"
+        >
+          <span
+            ref={pastillaRef}
+            aria-hidden
+            className="invisible absolute left-0 top-0 rounded-full bg-neutral-900"
+          />
           {tabs.map((t) => {
             const on = group === t;
             const label = t === "all" ? "Todos" : t;
@@ -270,18 +279,12 @@ export function Catalog() {
               <button
                 key={t}
                 type="button"
+                data-pill={t}
                 onClick={() => setGroup(t)}
-                className="relative whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors"
+                className="relative whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium"
               >
-                {on ? (
-                  <motion.span
-                    layoutId="filterPill"
-                    transition={{ type: "spring", stiffness: 400, damping: 32 }}
-                    className="absolute inset-0 rounded-full bg-neutral-900"
-                  />
-                ) : null}
                 <span
-                  className={`relative z-10 ${
+                  className={`relative z-10 transition-colors ${
                     on ? "text-white" : "text-neutral-500 hover:text-neutral-900"
                   }`}
                 >
