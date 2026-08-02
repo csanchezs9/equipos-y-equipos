@@ -24,21 +24,45 @@ if (typeof window !== "undefined") {
  * scroll que ScrollTrigger restaura en cada refresh, que es justo la clase de
  * pelea que estamos sacando.
  */
+/**
+ * Posición del elemento dentro del documento, subiendo por la cadena de
+ * offsetParent.
+ *
+ * NO se usa getBoundingClientRect a propósito: ese incluye los transform de los
+ * ancestros, y acá hay dos vivos justo cuando se navega. template.tsx anima
+ * scale 0.96 -> 1 sobre TODA la página durante medio segundo en cada cambio de
+ * ruta, y .nav-push conserva su translateX hasta que corre el efecto que cierra
+ * el menú. Medir con el rect da un destino corrido, y el error crece con la
+ * distancia al origen del transform. offsetTop es layout puro y los ignora.
+ */
+export function posicionEnDocumento(el: HTMLElement) {
+  let y = 0;
+  let nodo: HTMLElement | null = el;
+  while (nodo) {
+    y += nodo.offsetTop;
+    nodo = nodo.offsetParent as HTMLElement | null;
+  }
+  return y;
+}
+
 export function scrollToEl(el: Element, offset = 90, duration = 0.9) {
+  const destino = Math.max(0, posicionEnDocumento(el as HTMLElement) - offset);
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (reduce) {
-    const y = window.scrollY + el.getBoundingClientRect().top - offset;
-    window.scrollTo(0, Math.max(0, y));
+    window.scrollTo(0, destino);
     return;
   }
 
   gsap.to(window, {
     duration,
     ease: "power3.inOut",
-    // autoKill: si el usuario toca la rueda, la animación se corta en vez de
-    // pelearle.
-    scrollTo: { y: el, offsetY: offset, autoKill: true },
+    // autoKill en false a propósito. Cancela el tween ante cualquier scroll que
+    // no venga de él, y en iOS quitarle el overflow:hidden al body hace que
+    // Safari restaure la posición y emita scroll, matando la animación apenas
+    // arranca. Como estos saltos salen de un toque explícito del usuario en el
+    // menú, no hay contra quién pelear.
+    scrollTo: { y: destino, autoKill: false },
   });
 }
 
@@ -58,20 +82,17 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     let onHashLoad: (() => void) | undefined;
     if (target && document.querySelector(target)) {
       sessionStorage.removeItem("scrollTarget");
+      // Cross-page va SIN animar. Entre la entrada de template.tsx, el
+      // scrollTo(0,0) de arriba y los dos ScrollTrigger.refresh() de abajo, hay
+      // demasiado tocando el scroll en el mismo medio segundo como para que un
+      // tween llegue entero. Un salto seco no se puede interrumpir, y de todas
+      // formas el usuario acaba de cambiar de página: no hay continuidad visual
+      // que preservar.
       const goToHash = () => {
-        const el = document.querySelector(target);
-        // 0.35s no es capricho: el tween tiene que TERMINAR antes del
-        // ScrollTrigger.refresh() de los 500ms de más abajo. Ese refresh
-        // restaura la posición de scroll y el autoKill del tween lo lee como
-        // que el usuario interfirió, cortando el viaje a mitad de camino. Con
-        // 0.9s el salto quedaba siempre trunco y la página parecía rebotar
-        // arriba.
-        if (el) scrollToEl(el, 90, 0.35);
+        const el = document.querySelector<HTMLElement>(target);
+        if (el) window.scrollTo(0, Math.max(0, posicionEnDocumento(el) - 90));
       };
       onHashLoad = goToHash;
-      // 60ms: lo justo para que el árbol nuevo esté montado. Más espera no hace
-      // falta porque las imágenes de la home tienen su alto reservado
-      // (aspect-*), así que el destino no se corre al cargar.
       hashTimer = window.setTimeout(goToHash, 60);
       window.addEventListener("load", goToHash);
     } else {
