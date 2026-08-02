@@ -24,7 +24,7 @@ if (typeof window !== "undefined") {
  * scroll que ScrollTrigger restaura en cada refresh, que es justo la clase de
  * pelea que estamos sacando.
  */
-export function scrollToEl(el: Element, offset = 90) {
+export function scrollToEl(el: Element, offset = 90, duration = 0.9) {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (reduce) {
@@ -34,7 +34,7 @@ export function scrollToEl(el: Element, offset = 90) {
   }
 
   gsap.to(window, {
-    duration: 0.9,
+    duration,
     ease: "power3.inOut",
     // autoKill: si el usuario toca la rueda, la animación se corta en vez de
     // pelearle.

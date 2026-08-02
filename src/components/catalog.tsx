@@ -54,16 +54,25 @@ export function Catalog() {
 
   // Baja hasta la sección de la categoría.
   //
-  // La espera es porque smooth-scroll.tsx hace window.scrollTo(0,0) en su
-  // efecto de ruta y, al ser el componente padre, ese efecto corre DESPUÉS de
-  // este: sin esperar nos pisa el scroll. Un frame no alcanza porque además
-  // hay un ScrollTrigger.refresh() a los 500ms, así que salimos después de ese.
+  // Los tiempos están calzados contra smooth-scroll.tsx, que en su efecto de
+  // ruta hace window.scrollTo(0,0) y dispara ScrollTrigger.refresh() a los 0ms
+  // y a los 500ms:
+  //   - 60ms de espera: el efecto del padre corre DESPUÉS del de este hijo, así
+  //     que arrancar en el mismo tick haría que nos pise el scrollTo(0,0).
+  //   - 0.35s de animación: tiene que TERMINAR antes del refresh de los 500ms.
+  //     Ese refresh restaura la posición de scroll, y el autoKill del tween lo
+  //     leería como que el usuario interfirió, cortando el viaje a mitad.
+  // Total ~410ms, con margen antes de los 500ms.
+  //
+  // Arrancar tan temprano es seguro acá porque las tarjetas de producto tienen
+  // contenedor aspect-square: el alto está reservado y las imágenes al cargar
+  // no corren el layout, así que el destino no se mueve bajo los pies.
   useEffect(() => {
     if (!catParam) return;
     const t = window.setTimeout(() => {
       const el = document.getElementById(catParam);
-      if (el) scrollToEl(el, 96);
-    }, 550);
+      if (el) scrollToEl(el, 96, 0.35);
+    }, 60);
     return () => window.clearTimeout(t);
   }, [catParam]);
 
