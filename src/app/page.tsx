@@ -74,7 +74,7 @@ export default function Home() {
       {/* pt deja aire para la navbar fija (h-14 en móvil, h-20 editorial en desktop) */}
       <div className="mx-auto max-w-5xl px-6 pt-24 md:pt-32">
         <div className="flex flex-col items-center text-center">
-          <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-900">
+          <span className="rounded-full border border-hazard bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-900">
             Alquiler de maquinaria para construcción
           </span>
 
@@ -132,7 +132,7 @@ export default function Home() {
     <section id="equipos" className="bg-white text-neutral-900">
       <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
         <div className="flex max-w-2xl flex-col items-start text-left">
-          <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">
+          <span className="rounded-full border border-hazard bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">
             Líneas
           </span>
           <h2 className="mt-5 font-sans text-4xl font-semibold tracking-normal text-neutral-950 md:text-5xl md:leading-tight">

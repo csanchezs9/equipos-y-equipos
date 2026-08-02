@@ -654,7 +654,7 @@ export function SiteNav() {
                     <Link
                       href="/equipos"
                       onClick={() => setOpen(false)}
-                      className="group inline-flex items-center gap-1.5 text-sm font-medium text-neutral-600 transition-colors hover:text-brand"
+                      className="group inline-flex items-center gap-1.5 text-sm font-medium text-hazard transition-colors hover:text-hazard-deep"
                     >
                       Ver el catálogo
                       <span

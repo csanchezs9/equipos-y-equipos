@@ -41,7 +41,7 @@ export function Contacto() {
 
           {/* Formulario */}
           <div className="p-7 md:p-12">
-            <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">
+            <span className="rounded-full border border-hazard bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">
               Contacto
             </span>
             <h2 className="mt-5 font-sans text-3xl font-semibold tracking-normal text-neutral-950 md:text-4xl">

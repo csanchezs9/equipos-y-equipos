@@ -123,7 +123,7 @@ export function Catalog() {
 
           <div className="relative flex flex-col gap-7 p-7 md:p-12">
             <div className="max-w-2xl">
-              <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+              <span className="inline-block rounded-full border border-hazard bg-white/15 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
                 Catálogo
               </span>
               <h1 className="mt-5 font-sans text-4xl font-semibold tracking-normal text-white md:text-5xl md:leading-tight">
@@ -270,7 +270,7 @@ export function Catalog() {
           <span
             ref={pastillaRef}
             aria-hidden
-            className="invisible absolute left-0 top-0 rounded-full bg-neutral-900"
+            className="invisible absolute left-0 top-0 rounded-full border border-hazard bg-neutral-900"
           />
           {tabs.map((t) => {
             const on = group === t;

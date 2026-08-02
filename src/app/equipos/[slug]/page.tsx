@@ -232,7 +232,7 @@ export default async function FichaEquipo({
               </h2>
               <Link
                 href="/equipos"
-                className="group inline-flex items-center gap-1.5 text-sm font-medium text-neutral-600 transition-colors hover:text-brand"
+                className="group inline-flex items-center gap-1.5 text-sm font-medium text-hazard transition-colors hover:text-hazard-deep"
               >
                 Ver el catálogo
                 <span

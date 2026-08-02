@@ -10,7 +10,7 @@ export function Nosotros() {
   return (
     <section id="nosotros" className="relative overflow-hidden bg-white text-neutral-900">
       <div className="mx-auto max-w-3xl px-6 pt-20 text-center md:pt-28">
-        <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">
+        <span className="rounded-full border border-hazard bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">
           Nosotros
         </span>
         <h2 className="mt-5 font-sans text-4xl font-semibold tracking-normal text-neutral-950 md:text-5xl md:leading-tight">
