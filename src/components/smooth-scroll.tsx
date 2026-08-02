@@ -2,46 +2,48 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 
 if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 }
 
-let lenis: Lenis | null = null;
+/**
+ * El scroll es NATIVO. Antes había Lenis (smooth scroll por wheel virtual) y se
+ * sacó: mantenía su propia posición interna y la sincronizaba con ScrollTrigger
+ * a mano vía `lenis.on("scroll", ScrollTrigger.update)`. Cuando un
+ * ScrollTrigger.refresh() caía con una animación de Lenis en vuelo, la posición
+ * nativa y la virtual quedaban desfasadas y la rueda dejaba de mover la página.
+ * Además obligaba a marcar con data-lenis-prevent cada contenedor scrolleable
+ * interno (dropdowns, menú), y olvidarse de uno lo dejaba muerto.
+ *
+ * Acá solo quedan los saltos programáticos, animados con ScrollToPlugin. No se
+ * usa `scroll-behavior: smooth` en CSS a propósito: haría animado también el
+ * scroll que ScrollTrigger restaura en cada refresh, que es justo la clase de
+ * pelea que estamos sacando.
+ */
+export function scrollToEl(el: Element, offset = 90) {
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export function getLenis() {
-  return lenis;
+  if (reduce) {
+    const y = window.scrollY + el.getBoundingClientRect().top - offset;
+    window.scrollTo(0, Math.max(0, y));
+    return;
+  }
+
+  gsap.to(window, {
+    duration: 0.9,
+    ease: "power3.inOut",
+    // autoKill: si el usuario toca la rueda, la animación se corta en vez de
+    // pelearle.
+    scrollTo: { y: el, offsetY: offset, autoKill: true },
+  });
 }
 
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-
-  // Lenis + RAF (una sola vez)
-  useEffect(() => {
-    lenis = new Lenis({
-      duration: 1.15,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-      touchMultiplier: 1.6,
-    });
-
-    lenis.on("scroll", ScrollTrigger.update);
-
-    const raf = (time: number) => {
-      lenis?.raf(time * 1000);
-    };
-    gsap.ticker.add(raf);
-    gsap.ticker.lagSmoothing(0);
-
-    return () => {
-      gsap.ticker.remove(raf);
-      lenis?.destroy();
-      lenis = null;
-    };
-  }, []);
 
   // Reveals globales — re-corre por ruta
   useEffect(() => {
@@ -50,7 +52,7 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     // Intención de scroll cross-page (sessionStorage, un solo uso). La pone el
     // navbar al saltar desde otra ruta a un ancla del home. Si no hay, arranca
     // arriba.
-    lenis?.scrollTo(0, { immediate: true });
+    window.scrollTo(0, 0);
     const target = sessionStorage.getItem("scrollTarget");
     let hashTimer: number | undefined;
     let onHashLoad: (() => void) | undefined;
@@ -58,7 +60,7 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       sessionStorage.removeItem("scrollTarget");
       const goToHash = () => {
         const el = document.querySelector(target);
-        if (el) lenis?.scrollTo(el as HTMLElement, { offset: -90 });
+        if (el) scrollToEl(el);
       };
       onHashLoad = goToHash;
       // Espera a que imágenes/layout asienten para no caer corto.

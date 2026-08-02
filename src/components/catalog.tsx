@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { categories, products } from "@/data/catalog";
 import { GRUPOS, grupoDeCategoria, grupoPorId } from "@/data/grupos";
-import { getLenis } from "@/components/smooth-scroll";
+import { scrollToEl } from "@/components/smooth-scroll";
 import { waLink } from "@/lib/utils";
 
 // GRUPOS vive en @/data/grupos porque las fichas de equipo también lo usan
@@ -54,19 +54,16 @@ export function Catalog() {
 
   // Baja hasta la sección de la categoría.
   //
-  // El retraso NO es cosmético: smooth-scroll.tsx hace scrollTo(0, immediate)
-  // en su efecto de ruta y, al ser el componente padre, ese efecto corre
-  // DESPUÉS de este. Sin esperar, nos pisa el scroll. 350ms es el mismo valor
-  // que usa smooth-scroll para su propio salto a anclas cross-page.
+  // La espera es porque smooth-scroll.tsx hace window.scrollTo(0,0) en su
+  // efecto de ruta y, al ser el componente padre, ese efecto corre DESPUÉS de
+  // este: sin esperar nos pisa el scroll. Un frame no alcanza porque además
+  // hay un ScrollTrigger.refresh() a los 500ms, así que salimos después de ese.
   useEffect(() => {
     if (!catParam) return;
     const t = window.setTimeout(() => {
       const el = document.getElementById(catParam);
-      if (!el) return;
-      const lenis = getLenis();
-      if (lenis) lenis.scrollTo(el, { offset: -96 });
-      else el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 350);
+      if (el) scrollToEl(el, 96);
+    }, 550);
     return () => window.clearTimeout(t);
   }, [catParam]);
 

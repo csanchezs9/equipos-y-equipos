@@ -8,7 +8,7 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { categories } from "@/data/catalog";
 import { SEDES, waLink } from "@/lib/utils";
-import { getLenis } from "@/components/smooth-scroll";
+import { scrollToEl } from "@/components/smooth-scroll";
 
 /**
  * Navbar de dos estados.
@@ -166,12 +166,7 @@ function Selector({
             transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
             className={`absolute left-0 top-[calc(100%+0.65rem)] z-50 ${width} overflow-hidden rounded-2xl border border-neutral-200 bg-white p-1.5 shadow-xl shadow-neutral-900/10`}
           >
-            {/* data-lenis-prevent: sin esto Lenis (smoothWheel) se traga el
-                wheel y el trackpad scrollea la página en vez de la lista. */}
-            <div
-              data-lenis-prevent
-              className="max-h-[19rem] overflow-y-auto overscroll-contain"
-            >
+            <div className="max-h-[19rem] overflow-y-auto overscroll-contain">
               {children}
             </div>
           </motion.div>
@@ -301,22 +296,28 @@ export function SiteNav() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // data-nav-open en <html> es lo que dispara el empuje del contenido
-  // (.nav-push / .nav-push-fixed en globals.css). Lenis se para de verdad con
-  // stop(): con solo overflow:hidden el smooth scroll sigue corriendo detrás.
+  // data-nav-open en <html> dispara el empuje del contenido (.nav-push /
+  // .nav-push-fixed en globals.css). El scroll se bloquea con overflow del
+  // body, que con scroll nativo alcanza y sobra.
   useEffect(() => {
     const root = document.documentElement;
-    const lenis = getLenis();
-    if (open) {
-      root.dataset.navOpen = "true";
-      lenis?.stop();
-    } else {
+    if (!open) {
       delete root.dataset.navOpen;
-      lenis?.start();
+      return;
     }
+
+    root.dataset.navOpen = "true";
+    const previo = document.body.style.overflow;
+    // Compensa el ancho de la barra de scroll para que la página no pegue un
+    // salto lateral al ocultarla (en macOS con barras superpuestas da 0).
+    const barra = window.innerWidth - root.clientWidth;
+    document.body.style.overflow = "hidden";
+    if (barra > 0) document.body.style.paddingRight = `${barra}px`;
+
     return () => {
       delete root.dataset.navOpen;
-      getLenis()?.start();
+      document.body.style.overflow = previo;
+      document.body.style.paddingRight = "";
     };
   }, [open]);
 
@@ -352,10 +353,7 @@ export function SiteNav() {
     const hash = href.slice(href.indexOf("#"));
     if (isHome) {
       const el = document.querySelector(hash);
-      if (!el) return;
-      const lenis = getLenis();
-      if (lenis) lenis.scrollTo(el as HTMLElement, { offset: -80 });
-      else el.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (el) scrollToEl(el, 80);
     } else {
       sessionStorage.setItem("scrollTarget", hash);
       router.push("/");
@@ -574,10 +572,7 @@ export function SiteNav() {
                 </button>
               </div>
 
-              {/* data-lenis-prevent: si no, Lenis se traga el wheel y el panel
-                  no scrollea. */}
               <motion.div
-                data-lenis-prevent
                 variants={menuVariants}
                 initial={false}
                 animate={open ? "open" : "closed"}
