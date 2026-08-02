@@ -376,6 +376,20 @@ export function SiteNav() {
   const compacta = scrolled || !isHome;
   const cotizar = waLink(mensajeCotizacion(equipo, sede));
 
+  // Mismo truco que data-nav-open: el estado de la barra se refleja en <html>
+  // para que otras partes de la página puedan reaccionar desde CSS. Acá lo usa
+  // .hero-cta en globals.css, que agranda los dos botones del hero al mismo
+  // tiempo que la barra se vuelve isla. Un contexto solo para pasar un booleano
+  // a un hermano sería mucho aparato.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (compacta) root.dataset.navIsla = "true";
+    else delete root.dataset.navIsla;
+    return () => {
+      delete root.dataset.navIsla;
+    };
+  }, [compacta]);
+
   function onNav(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
     setOpen(false);
     setDrop(null);

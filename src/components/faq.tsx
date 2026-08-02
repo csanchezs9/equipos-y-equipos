@@ -45,23 +45,27 @@ const FAQS: {
 
 export function Faq() {
   return (
-    <section id="faq" className="bg-white text-neutral-900">
+    // Sin fondo propio: lo pone el contenedor de page.tsx, que corre la misma
+    // foto detrás de esta sección y de contacto. El contenido va en tarjeta
+    // blanca, igual que el de contacto, para no escribir encima de la foto.
+    <section id="faq" className="relative text-neutral-900">
       {/* El marcado sale del mismo array que se pinta abajo, así no puede
           quedar diciendo algo distinto a lo que el usuario lee. */}
       <JsonLd data={faqSchema(FAQS)} />
 
-      <div className="mx-auto max-w-3xl px-6 py-20 md:py-28">
-        <div className="flex flex-col items-start text-left">
-          <span className="rounded-full border border-hazard bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">
-            Preguntas frecuentes
-          </span>
-          <h2 className="mt-5 font-sans text-4xl font-semibold tracking-normal text-neutral-950 md:text-5xl md:leading-tight">
-            Lo que más nos preguntan
-          </h2>
-          <p className="mt-5 text-base leading-7 text-neutral-500">
-            Resolvemos las dudas comunes sobre alquiler, despacho y soporte. Si
-            te queda algo, escríbenos y te respondemos al toque.
-          </p>
+      <div className="mx-auto max-w-4xl px-6 py-20 md:py-28">
+        <div className="rounded-3xl border border-neutral-200 bg-white p-7 shadow-sm md:p-12">
+          <div className="flex flex-col items-start text-left">
+            <span className="rounded-full border border-hazard bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">
+              Preguntas frecuentes
+            </span>
+            <h2 className="mt-5 font-sans text-4xl font-semibold tracking-normal text-neutral-950 md:text-5xl md:leading-tight">
+              Lo que más nos preguntan
+            </h2>
+            <p className="mt-5 text-base leading-7 text-neutral-500">
+              Resolvemos las dudas comunes sobre alquiler, despacho y soporte. Si
+              te queda algo, escríbenos y te respondemos al toque.
+            </p>
         </div>
 
         <Accordion type="single" collapsible className="mt-12 w-full">
@@ -99,6 +103,7 @@ export function Faq() {
             </AccordionItem>
           ))}
         </Accordion>
+        </div>
       </div>
     </section>
   );

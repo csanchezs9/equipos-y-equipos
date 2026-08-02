@@ -3,7 +3,6 @@ import { Inter, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/smooth-scroll";
 import { SiteNav } from "@/components/site-nav";
-import { Footer } from "@/components/footer";
 import { FloatingActionMenu } from "@/components/floating-action-menu";
 import { JsonLd } from "@/components/json-ld";
 import { Analitica } from "@/components/analytics";
@@ -122,9 +121,13 @@ export default function RootLayout({
               Solo envuelve el contenido en flujo: los elementos fijos (navbar,
               FAB) van por fuera con .nav-push-fixed, porque un ancestro con
               transform les rompería el position:fixed. */}
+          {/* El <Footer/> ya no va acá: cada página lo pone al final. La home
+              necesita meterlo dentro del mismo contenedor que el FAQ y
+              contacto para que la foto de fondo sea una sola y no se vea la
+              costura entre dos recortes distintos, y desde el layout no hay
+              forma de envolver solo el tramo final de la página. */}
           <div className="nav-push">
             <main className="overflow-x-clip">{children}</main>
-            <Footer />
           </div>
           <FloatingActionMenu />
         </SmoothScroll>

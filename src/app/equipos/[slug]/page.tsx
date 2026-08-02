@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { categories, products } from "@/data/catalog";
 import { grupoDeCategoria } from "@/data/grupos";
 import { JsonLd } from "@/components/json-ld";
+import { Footer, CierreConFondo } from "@/components/footer";
 import { productSchema, breadcrumbSchema } from "@/lib/schema";
 import { SEDES, WHATSAPP_DISPLAY, WHATSAPP, waLink } from "@/lib/utils";
 
@@ -93,6 +94,7 @@ export default async function FichaEquipo({
   ];
 
   return (
+    <>
     <section className="bg-white text-neutral-900">
       <JsonLd data={schema} />
 
@@ -281,5 +283,12 @@ export default async function FichaEquipo({
         ) : null}
       </div>
     </section>
+
+    {/* El footer lo monta cada página desde que salió del layout. Ver
+        CierreConFondo en components/footer.tsx. */}
+    <CierreConFondo>
+      <Footer />
+    </CierreConFondo>
+    </>
   );
 }

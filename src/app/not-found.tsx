@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { ArrowRight } from "@/components/icons";
+import { Footer, CierreConFondo } from "@/components/footer";
 
 export default function NotFound() {
   return (
+    <>
     <section className="container-x flex min-h-svh flex-col items-center justify-center py-40 text-center">
       <h1 className="display-xl">Sin señal</h1>
       <p className="mt-6 max-w-sm text-balance text-mute">
@@ -16,5 +18,12 @@ export default function NotFound() {
         <ArrowRight />
       </Link>
     </section>
+
+    {/* El footer lo monta cada página desde que salió del layout. Ver
+        CierreConFondo en components/footer.tsx. */}
+    <CierreConFondo>
+      <Footer />
+    </CierreConFondo>
+    </>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Catalog } from "@/components/catalog";
+import { Footer, CierreConFondo } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Catálogo de equipos",
@@ -14,8 +15,16 @@ export default function EquiposPage() {
   // el Suspense más cercano. Con este boundary la ruta se sigue prerenderizando
   // y solo el catálogo se hidrata.
   return (
-    <Suspense fallback={<div className="min-h-svh bg-white" />}>
-      <Catalog />
-    </Suspense>
+    <>
+      <Suspense fallback={<div className="min-h-svh bg-white" />}>
+        <Catalog />
+      </Suspense>
+
+      {/* El footer lo monta cada página desde que salió del layout. Ver
+          CierreConFondo en components/footer.tsx. */}
+      <CierreConFondo>
+        <Footer />
+      </CierreConFondo>
+    </>
   );
 }

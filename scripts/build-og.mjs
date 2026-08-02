@@ -15,10 +15,8 @@ const raiz = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 const ANCHO = 1200;
 const ALTO = 630;
-const BANDA = 150; // franja blanca de abajo donde va el logo
-const FOTO_ALTO = ALTO - BANDA;
-const FILETE = 4; // línea azul de marca entre foto y franja
-const BRAND = { r: 0x16, g: 0x65, b: 0xad };
+const VELO = 0.58; // cuánto se oscurece la foto para que el logo respire
+const LOGO_ANCHO = 520;
 
 // Recorte vertical de la foto: deja fuera el cielo y los edificios del fondo y
 // centra la cuadrilla sobre la losa.
@@ -27,42 +25,61 @@ const RECORTE = { left: 0, top: 198, width: 1400, height: 735 };
 
 const foto = await sharp(FUENTE)
   .extract(RECORTE)
-  .resize(ANCHO, FOTO_ALTO, { fit: "cover" })
+  .resize(ANCHO, ALTO, { fit: "cover" })
   .toBuffer();
 
-const logo = await sharp(join(raiz, "public/brand/equiposyequipos-logo.png"))
-  .resize({ height: 88 })
-  .toBuffer();
-const { width: logoAncho } = await sharp(logo).metadata();
-
-const filete = await sharp({
+const velo = await sharp({
   create: {
     width: ANCHO,
-    height: FILETE,
-    channels: 3,
-    background: BRAND,
+    height: ALTO,
+    channels: 4,
+    background: { r: 8, g: 8, b: 10, alpha: VELO },
   },
 })
   .png()
   .toBuffer();
 
-const salida = await sharp({
-  create: {
-    width: ANCHO,
-    height: ALTO,
-    channels: 3,
-    background: { r: 255, g: 255, b: 255 },
-  },
-})
+/**
+ * Versión invertida de la marca: el azul pasa a blanco y el naranja se queda.
+ *
+ * El logo original es azul marino sobre transparente, y sobre la foto ya
+ * oscurecida el azul se hunde (queda en ~1.3:1 contra el fondo). Pasarlo a
+ * blanco es lo que hace cualquier marca para fondo oscuro, y el naranja del
+ * techo aguanta tal cual.
+ */
+async function marcaEnClaro() {
+  const { data, info } = await sharp(join(raiz, "public/brand/ee-mark-croped.png"))
+    .resize({ width: LOGO_ANCHO })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] === 0) continue; // transparente, no tocar
+    const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
+    // El naranja de marca es rojo alto y azul bajo. Todo lo demás (el azul
+    // marino y los bordes suavizados contra él) se va a blanco.
+    const esNaranja = r > 150 && g > 70 && b < 110;
+    if (!esNaranja) {
+      data[i] = 255;
+      data[i + 1] = 255;
+      data[i + 2] = 255;
+    }
+  }
+
+  return sharp(data, { raw: info }).png().toBuffer();
+}
+
+const logo = await marcaEnClaro();
+const { width: lw, height: lh } = await sharp(logo).metadata();
+
+const salida = await sharp(foto)
   .composite([
-    { input: foto, top: 0, left: 0 },
-    { input: filete, top: FOTO_ALTO, left: 0 },
-    // El logo trae fondo blanco propio, así que sobre la franja blanca calza
-    // sin recorte ni halo.
+    { input: velo, top: 0, left: 0 },
     {
       input: logo,
-      top: FOTO_ALTO + FILETE + Math.round((BANDA - FILETE - 88) / 2),
-      left: 56,
+      top: Math.round((ALTO - lh) / 2),
+      left: Math.round((ANCHO - lw) / 2),
     },
   ])
   .jpeg({ quality: 82, mozjpeg: true })
@@ -73,5 +90,5 @@ for (const destino of ["src/app/opengraph-image.jpg", "src/app/twitter-image.jpg
 }
 
 console.log(
-  `og ${ANCHO}x${ALTO} · ${(salida.length / 1024).toFixed(0)}KB · logo ${logoAncho}px`
+  `og ${ANCHO}x${ALTO} · ${(salida.length / 1024).toFixed(0)}KB · logo ${lw}x${lh}`
 );

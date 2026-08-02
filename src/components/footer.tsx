@@ -11,31 +11,52 @@ import { categories } from "@/data/catalog";
 
 const COL_A = categories.slice(0, 6);
 
+/**
+ * Fondo del cierre de la página. Envuelve lo que va sobre la foto: en la home
+ * son el FAQ, contacto y el footer; en el resto de rutas solo el footer.
+ *
+ * Existe como componente y no como clase suelta porque el footer salió del
+ * layout: cada página lo monta, y todas tienen que envolverlo igual para que el
+ * cierre se vea del mismo material.
+ *
+ * isolate + -z-10: la foto queda detrás de todo lo de adentro sin tener que
+ * ponerle z-index a cada hijo, y el stacking context propio la mantiene dentro
+ * del bloque.
+ */
+export function CierreConFondo({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative isolate">
+      <Image
+        src="/fondos/estructura-atardecer.webp"
+        alt=""
+        aria-hidden
+        fill
+        sizes="100vw"
+        className="-z-10 object-cover"
+      />
+      {children}
+    </div>
+  );
+}
+
 const linkCls =
   "border-b border-transparent text-sm text-neutral-500 transition-all duration-300 ease-in-out hover:border-[#F58226] hover:text-neutral-900";
 
 export function Footer() {
   return (
+    // Sin fondo propio: en la home lo pone el contenedor que comparte con el
+    // FAQ y contacto. Antes acá iba un mp4 de 2.4MB en autoplay, y un fade
+    // blanco arriba para empalmar con una sección blanca que ya no existe.
+    //
+    // role="contentinfo" explícito: en la home el footer cuelga de <main>, y un
+    // <footer> descendiente de <main> pierde ese landmark. El rol se lo
+    // devuelve.
     <footer
       id="sedes"
+      role="contentinfo"
       data-analytics-zone="footer"
-      className="relative w-full overflow-hidden bg-cover bg-center py-20 md:py-32"
+      className="relative w-full overflow-hidden py-20 md:py-32"
     >
-      {/* Fondo en video */}
-      <video
-        className="absolute inset-0 h-full w-full object-cover"
-        autoPlay
-        loop
-        muted
-        playsInline
-        poster="/videos/footer/footer-poster.jpg"
-      >
-        <source src="/videos/footer/footer-bg.mp4" type="video/mp4" />
-      </video>
-      <div className="absolute inset-0 bg-neutral-950/40" />
-      {/* Fade blanco de transición desde la sección de equipos */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-white to-transparent md:h-40" />
-
       <div className="container-x relative">
         <div className="mx-auto max-w-7xl rounded-lg bg-white p-8 text-neutral-900 shadow-lg md:p-12">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-12">

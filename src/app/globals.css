@@ -261,9 +261,31 @@
   pointer-events: none;
 }
 
+/* Los dos CTA del hero crecen al mismo tiempo que el navbar se contrae a isla,
+   así el cambio de arriba se lee como una sola transición y no como dos cosas
+   sueltas. Lo dispara data-nav-isla en <html> (site-nav.tsx).
+
+   La escala va en el contenedor y no en cada botón: los botones ya llevan
+   transition-colors de Tailwind, y declarar otra transición encima se pisa con
+   esa (misma propiedad, gana la última). Un transform en el padre tampoco
+   mueve el layout, así que nada de abajo se corre.
+
+   Solo desde sm: en móvil los botones son w-full y agrandarlos se saldría del
+   padding de la página. */
+.hero-cta {
+  transition: transform 600ms var(--ease-out-expo);
+}
+
+@media (min-width: 640px) {
+  [data-nav-isla="true"] .hero-cta {
+    transform: scale(1.22);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .nav-push,
-  .nav-push-fixed {
+  .nav-push-fixed,
+  .hero-cta {
     transition-duration: 1ms;
   }
 }

@@ -4,6 +4,7 @@ import { waLink } from "@/lib/utils";
 import { Faq } from "@/components/faq";
 import { Nosotros } from "@/components/nosotros";
 import { Contacto } from "@/components/contacto";
+import { Footer, CierreConFondo } from "@/components/footer";
 import { TextAnimate } from "@/components/text-animate";
 
 type Foto = { src: string; alt: string };
@@ -171,7 +172,9 @@ export default function Home() {
             acompañamos.
           </TextAnimate>
 
-          <div className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
+          {/* hero-cta: crecen cuando el navbar se contrae a isla. La regla
+              vive en globals.css y la dispara data-nav-isla en <html>. */}
+          <div className="hero-cta mt-8 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
             <a
               href={waLink(
                 "Hola Equipos y Equipos, quiero cotizar el alquiler de un equipo."
@@ -341,9 +344,24 @@ export default function Home() {
 
     <Nosotros />
 
-    <Faq />
+    {/* Una sola foto detrás del FAQ, contacto y el footer. Los tres van sin
+        fondo propio y ponen su contenido en tarjeta blanca, así la foto se ve
+        alrededor sin velo ni texto encima.
 
-    <Contacto />
+        El footer se trajo acá adentro (salió del layout) justamente para esto:
+        con una imagen por bloque, cada object-cover recortaba a una escala
+        distinta y la costura entre contacto y el footer cantaba.
+
+        Nada de posición fija ni de fondo global: las secciones de arriba son
+        opacas, pero el scale de entrada de template.tsx deja un borde por el
+        que se alcanzaba a ver. */}
+    <CierreConFondo>
+      <Faq />
+
+      <Contacto />
+
+      <Footer />
+    </CierreConFondo>
     </>
   );
 }
