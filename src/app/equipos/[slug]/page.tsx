@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { categories, products } from "@/data/catalog";
+import { grupoDeCategoria } from "@/data/grupos";
 import { JsonLd } from "@/components/json-ld";
 import { SEDES, WHATSAPP_DISPLAY, WHATSAPP, waLink } from "@/lib/utils";
 
@@ -65,6 +66,7 @@ export default async function FichaEquipo({
   const lineaSlug = p.categories[0];
   const linea = categories.find((c) => c.slug === lineaSlug);
   const lineaNombre = p.categoryNames[0] ?? "Equipos";
+  const grupo = grupoDeCategoria(lineaSlug);
 
   // Otros equipos de la misma línea, sin repetir el actual.
   const relacionados = products
@@ -103,7 +105,18 @@ export default async function FichaEquipo({
           <span aria-hidden className="text-neutral-300">
             /
           </span>
-          <span className="text-neutral-500">{lineaNombre}</span>
+          {/* Devuelve al catálogo con el filtro de su etapa de obra ya puesto
+              (Rodillos Compactadores -> ?linea=compactacion). */}
+          {grupo ? (
+            <Link
+              href={`/equipos?linea=${grupo.id}`}
+              className="text-neutral-500 transition-colors hover:text-brand"
+            >
+              {lineaNombre}
+            </Link>
+          ) : (
+            <span className="text-neutral-500">{lineaNombre}</span>
+          )}
           <span aria-hidden className="text-neutral-300">
             /
           </span>
@@ -139,7 +152,10 @@ export default async function FichaEquipo({
           {/* Datos */}
           <div className="flex flex-col">
             {linea ? (
-              <Link href="/equipos" className="kicker w-fit text-sm">
+              <Link
+                href={grupo ? `/equipos?linea=${grupo.id}` : "/equipos"}
+                className="kicker w-fit text-sm"
+              >
                 {lineaNombre}
               </Link>
             ) : null}

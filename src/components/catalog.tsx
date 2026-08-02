@@ -3,38 +3,15 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { categories, products } from "@/data/catalog";
+import { GRUPOS, grupoPorId } from "@/data/grupos";
 import { waLink } from "@/lib/utils";
 
-// Las 12 líneas agrupadas por etapa de obra. El orden manda en la nav.
-const GROUPS: { label: string; slugs: string[] }[] = [
-  {
-    label: "Estructura y altura",
-    slugs: [
-      "andamios",
-      "formaleteria-para-columna-y-muro",
-      "formaleteria-para-losas",
-      "equipos-de-traccion-vertical",
-    ],
-  },
-  {
-    label: "Concreto y acabado",
-    slugs: ["concretadoras", "allanadoras"],
-  },
-  {
-    label: "Compactación",
-    slugs: ["vibradores-y-compactadores", "rodillos-compactadores"],
-  },
-  {
-    label: "Corte y demolición",
-    slugs: ["cortadoras", "compresores"],
-  },
-  {
-    label: "Otros equipos",
-    slugs: ["mini-cargadores", "basculas-500kgs"],
-  },
-];
+// GRUPOS vive en @/data/grupos porque las fichas de equipo también lo usan
+// para armar el link de vuelta con el filtro puesto.
+const GROUPS = GRUPOS;
 
 function norm(s: string) {
   return s
@@ -58,8 +35,15 @@ function SearchIcon({ className }: { className?: string }) {
 }
 
 export function Catalog() {
+  // ?linea=compactacion preselecciona el filtro. Lo usan las migas de pan de
+  // las fichas para devolver al catálogo ya filtrado por la línea del equipo.
+  // useSearchParams obliga a un <Suspense> arriba (lo pone /equipos/page.tsx);
+  // así la página sigue siendo estática y solo esta parte se hidrata.
+  const searchParams = useSearchParams();
+  const grupoInicial = grupoPorId(searchParams.get("linea"))?.label ?? "all";
+
   const [query, setQuery] = useState("");
-  const [group, setGroup] = useState<string>("all");
+  const [group, setGroup] = useState<string>(grupoInicial);
   const [filterOpen, setFilterOpen] = useState(false);
 
   const blocks = useMemo(() => {
