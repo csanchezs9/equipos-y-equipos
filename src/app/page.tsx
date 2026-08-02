@@ -92,18 +92,31 @@ const PARES: Par[] = [
   },
 ];
 
-const IMAGES = [
+// Cada foto del hero cruza a `hover` al pasar el mouse.
+const IMAGES: { src: string; alt: string; hover: Foto }[] = [
   {
     src: "/hero/pexels-the-jd-darshan-solanki-215282-11959308.webp",
     alt: "Grúas en obra junto al río",
+    hover: {
+      src: "/hero/torres-gruas-atardecer.jpg",
+      alt: "Torres en construcción con grúas al atardecer",
+    },
   },
   {
     src: "/hero/pexels-construccion-total-2464540-14420873.webp",
     alt: "Volqueta y cortadora de piso en obra",
+    hover: {
+      src: "/hero/cuadrilla-zanja-excavadora.jpg",
+      alt: "Dos operarios frente a una zanja con una excavadora trabajando",
+    },
   },
   {
     src: "/hero/pexels-construccion-total-2464540-6106878.webp",
     alt: "Mezcladora de concreto en obra",
+    hover: {
+      src: "/hero/volqueta-descargando-contraluz.jpg",
+      alt: "Volqueta descargando material a contraluz bajo un viaducto",
+    },
   },
 ];
 
@@ -179,16 +192,30 @@ export default function Home() {
       <div className="mx-auto mt-12 max-w-6xl px-6 md:mt-16">
         <div className="grid grid-cols-3 gap-4 md:gap-6">
           {IMAGES.map((img) => (
+            /* Cruce entre las dos fotos. Las dos hacen un zoom leve en sentidos
+               opuestos: la de abajo entra desde 1.05 mientras la de arriba sale
+               hacia 1. Así el cambio se lee como un movimiento y no como dos
+               capas prendiéndose y apagándose.
+               Solo desde sm: en táctil no hay hover y la segunda foto no se
+               alcanzaría nunca. */
             <div
               key={img.src}
-              className="relative aspect-[3/4] overflow-hidden rounded-lg bg-neutral-100"
+              className="group relative aspect-[3/4] overflow-hidden rounded-lg bg-neutral-100"
             >
               <Image
                 src={img.src}
                 alt={img.alt}
                 fill
                 sizes="(max-width: 768px) 33vw, 33vw"
-                className="object-cover"
+                className="object-cover transition-[opacity,transform] duration-700 [transition-timing-function:var(--ease-out-expo)] sm:group-hover:scale-105 sm:group-hover:opacity-0"
+              />
+              <Image
+                src={img.hover.src}
+                alt=""
+                aria-hidden
+                fill
+                sizes="(max-width: 768px) 33vw, 33vw"
+                className="scale-105 object-cover opacity-0 transition-[opacity,transform] duration-700 [transition-timing-function:var(--ease-out-expo)] sm:group-hover:scale-100 sm:group-hover:opacity-100"
               />
             </div>
           ))}
