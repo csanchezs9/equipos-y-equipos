@@ -384,7 +384,17 @@ export function SiteNav() {
     const hash = href.slice(href.indexOf("#"));
     if (isHome) {
       const el = document.querySelector(hash);
-      if (el) scrollToEl(el, 80);
+      if (!el) return;
+
+      // Desbloquear ACÁ y no dejarlo al efecto de `open`: setOpen es asíncrono,
+      // el efecto que quita el overflow del body corre después de este handler,
+      // y para entonces el tween ya arrancó contra un body bloqueado. No puede
+      // mover la página, el autoKill lo lee como interferencia y lo mata. El
+      // efecto igual va a dejar estos mismos valores al desmontar el bloqueo.
+      document.body.style.overflow = "";
+      document.body.style.paddingRight = "";
+
+      scrollToEl(el, 80);
     } else {
       sessionStorage.setItem("scrollTarget", hash);
       router.push("/");

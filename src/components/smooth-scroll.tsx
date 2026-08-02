@@ -60,11 +60,19 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       sessionStorage.removeItem("scrollTarget");
       const goToHash = () => {
         const el = document.querySelector(target);
-        if (el) scrollToEl(el);
+        // 0.35s no es capricho: el tween tiene que TERMINAR antes del
+        // ScrollTrigger.refresh() de los 500ms de más abajo. Ese refresh
+        // restaura la posición de scroll y el autoKill del tween lo lee como
+        // que el usuario interfirió, cortando el viaje a mitad de camino. Con
+        // 0.9s el salto quedaba siempre trunco y la página parecía rebotar
+        // arriba.
+        if (el) scrollToEl(el, 90, 0.35);
       };
       onHashLoad = goToHash;
-      // Espera a que imágenes/layout asienten para no caer corto.
-      hashTimer = window.setTimeout(goToHash, 350);
+      // 60ms: lo justo para que el árbol nuevo esté montado. Más espera no hace
+      // falta porque las imágenes de la home tienen su alto reservado
+      // (aspect-*), así que el destino no se corre al cargar.
+      hashTimer = window.setTimeout(goToHash, 60);
       window.addEventListener("load", goToHash);
     } else {
       sessionStorage.removeItem("scrollTarget");
