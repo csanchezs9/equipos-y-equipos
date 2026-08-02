@@ -4,6 +4,7 @@ import { waLink } from "@/lib/utils";
 import { Faq } from "@/components/faq";
 import { Nosotros } from "@/components/nosotros";
 import { Contacto } from "@/components/contacto";
+import { TextAnimate } from "@/components/text-animate";
 
 type Foto = { src: string; alt: string };
 type Texto = { title: string; desc: string };
@@ -142,11 +143,17 @@ export default function Home() {
             Equipos para tu obra, sin que nada se detenga
           </h1>
 
-          <p className="mt-6 max-w-xl font-sans text-base font-medium leading-6 text-neutral-600">
+          <TextAnimate
+            as="p"
+            animation="slideUp"
+            by="word"
+            duration={1}
+            className="mt-6 max-w-xl font-sans text-base font-medium leading-6 text-neutral-600"
+          >
             Maquinaria mantenida y lista para producir, con soporte técnico en
             Medellín, Pereira y Armenia. Cotizas, despachamos a tu obra y te
             acompañamos.
-          </p>
+          </TextAnimate>
 
           <div className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
             <a

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { SEDES, WHATSAPP } from "@/lib/utils";
+import { TextAnimate } from "@/components/text-animate";
 
 export function Contacto() {
   const [nombre, setNombre] = useState("");
@@ -41,18 +42,46 @@ export function Contacto() {
 
           {/* Formulario */}
           <div className="p-7 md:p-12">
-            <span className="rounded-full border border-hazard bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900">
+            <TextAnimate
+              as="span"
+              animation="slideUp"
+              by="word"
+              duration={1}
+              className="inline-block rounded-full border border-hazard bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-900"
+            >
               Contacto
-            </span>
-            <h2 className="mt-5 font-sans text-3xl font-semibold tracking-normal text-neutral-950 md:text-4xl">
+            </TextAnimate>
+            <TextAnimate
+              as="h2"
+              animation="slideUp"
+              by="word"
+              duration={1}
+              delay={0.1}
+              className="mt-5 font-sans text-3xl font-semibold tracking-normal text-neutral-950 md:text-4xl"
+            >
               Cuéntanos tu proyecto
-            </h2>
-            <p className="mt-3 text-base leading-7 text-neutral-500">
+            </TextAnimate>
+            <TextAnimate
+              as="p"
+              animation="slideUp"
+              by="word"
+              duration={1}
+              delay={0.2}
+              className="mt-3 text-base leading-7 text-neutral-500"
+            >
               Déjanos tus datos y lo que necesitas. Te respondemos por WhatsApp
               con disponibilidad y cotización.
-            </p>
+            </TextAnimate>
 
-            <form onSubmit={onSubmit} className="mt-8 flex flex-col gap-4">
+            {/* El formulario entra como bloque, no palabra por palabra: partir
+                el texto de un <label> en spans afecta el nombre accesible del
+                campo, y con etiquetas de una palabra el escalonado no se nota.
+                data-reveal lo toma el GSAP global de smooth-scroll.tsx. */}
+            <form
+              onSubmit={onSubmit}
+              data-reveal="up"
+              className="mt-8 flex flex-col gap-4"
+            >
               <div>
                 <label
                   htmlFor="c-nombre"
