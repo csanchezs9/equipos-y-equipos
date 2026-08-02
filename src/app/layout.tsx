@@ -110,8 +110,14 @@ export default function RootLayout({
         <JsonLd data={[organizationSchema, localBusinessSchema, websiteSchema]} />
         <SmoothScroll>
           <SiteNav />
-          <main className="overflow-x-clip">{children}</main>
-          <Footer />
+          {/* .nav-push se corre a la izquierda cuando el menú lateral abre.
+              Solo envuelve el contenido en flujo: los elementos fijos (navbar,
+              FAB) van por fuera con .nav-push-fixed, porque un ancestro con
+              transform les rompería el position:fixed. */}
+          <div className="nav-push">
+            <main className="overflow-x-clip">{children}</main>
+            <Footer />
+          </div>
           <FloatingActionMenu />
         </SmoothScroll>
       </body>

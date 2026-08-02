@@ -230,3 +230,52 @@
     animation: none !important;
   }
 }
+
+/* ---- Menú lateral que empuja el contenido ----------------------------------
+   El panel entra por la derecha y el resto de la página se corre a la
+   izquierda el mismo ancho, con la misma duración y easing, para que se lean
+   como una sola pieza. El ancho vive en una variable porque lo comparten el
+   panel (que lo usa de width) y el empuje (que lo usa de translate).
+
+   OJO: transform convierte al elemento en bloque contenedor de sus
+   descendientes position:fixed. Por eso .nav-push envuelve solo <main> y
+   <footer>, y los elementos fijos (navbar, FAB) llevan .nav-push-fixed y se
+   trasladan por su cuenta. Y por eso el estado cerrado es transform:none y no
+   translateX(0): así fuera del menú no hay bloque contenedor que rompa nada. */
+:root {
+  --nav-panel-w: 100vw;
+}
+@media (min-width: 640px) {
+  :root {
+    --nav-panel-w: 26rem;
+  }
+}
+@media (min-width: 1024px) {
+  :root {
+    --nav-panel-w: 32rem;
+  }
+}
+
+.nav-push,
+.nav-push-fixed {
+  transition: transform 700ms var(--ease-out-expo);
+}
+
+[data-nav-open="true"] .nav-push,
+[data-nav-open="true"] .nav-push-fixed {
+  transform: translateX(calc(-1 * var(--nav-panel-w)));
+}
+
+/* El FAB ya usa translate-* de Tailwind para su propio show/hide, así que no
+   puede llevar .nav-push-fixed sin pisarse los transforms. Se desvanece. */
+[data-nav-open="true"] .nav-hide-on-menu {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-push,
+  .nav-push-fixed {
+    transition-duration: 1ms;
+  }
+}
