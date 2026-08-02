@@ -122,8 +122,11 @@ const IMAGES: { src: string; alt: string; hover: Foto }[] = [
 
 function TarjetaTexto({ title, desc }: Texto) {
   return (
-    <div className="flex aspect-[3/4] flex-col justify-between rounded-xl bg-neutral-50 p-7 md:p-8">
-      <h3 className="font-sans text-2xl font-medium tracking-tight text-neutral-950">
+    // El aspect-[3/4] arranca en md. En móvil las dos tarjetas se apilan, así
+    // que igualar la altura de la foto no sirve de nada: solo abría un hueco
+    // enorme entre el título y la descripción por el justify-between.
+    <div className="flex flex-col justify-between gap-4 rounded-xl bg-neutral-50 p-6 md:aspect-[3/4] md:gap-0 md:p-8">
+      <h3 className="font-sans text-xl font-medium tracking-tight text-neutral-950 md:text-2xl">
         {title}
       </h3>
       <div>
@@ -132,7 +135,7 @@ function TarjetaTexto({ title, desc }: Texto) {
           href={waLink(`Hola Equipos y Equipos, quiero información sobre ${title}.`)}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-5 inline-block text-sm font-medium text-neutral-900 underline underline-offset-4 transition-colors hover:text-brand"
+          className="mt-4 inline-block text-sm font-medium text-neutral-900 underline underline-offset-4 transition-colors hover:text-brand md:mt-5"
         >
           Más información
         </a>
