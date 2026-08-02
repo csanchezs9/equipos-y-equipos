@@ -105,11 +105,11 @@ export default async function FichaEquipo({
           <span aria-hidden className="text-neutral-300">
             /
           </span>
-          {/* Devuelve al catálogo con el filtro de su etapa de obra ya puesto
-              (Rodillos Compactadores -> ?linea=compactacion). */}
+          {/* Devuelve al catálogo filtrado por su etapa de obra y bajando
+              hasta la sección de esta línea. */}
           {grupo ? (
             <Link
-              href={`/equipos?linea=${grupo.id}`}
+              href={`/equipos?cat=${lineaSlug}`}
               className="text-neutral-500 transition-colors hover:text-brand"
             >
               {lineaNombre}
@@ -153,7 +153,7 @@ export default async function FichaEquipo({
           <div className="flex flex-col">
             {linea ? (
               <Link
-                href={grupo ? `/equipos?linea=${grupo.id}` : "/equipos"}
+                href={grupo ? `/equipos?cat=${lineaSlug}` : "/equipos"}
                 className="kicker w-fit text-sm"
               >
                 {lineaNombre}

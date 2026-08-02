@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { categories, products } from "@/data/catalog";
-import { GRUPOS, grupoPorId } from "@/data/grupos";
+import { GRUPOS, grupoDeCategoria, grupoPorId } from "@/data/grupos";
+import { getLenis } from "@/components/smooth-scroll";
 import { waLink } from "@/lib/utils";
 
 // GRUPOS vive en @/data/grupos porque las fichas de equipo también lo usan
@@ -35,16 +36,39 @@ function SearchIcon({ className }: { className?: string }) {
 }
 
 export function Catalog() {
-  // ?linea=compactacion preselecciona el filtro. Lo usan las migas de pan de
-  // las fichas para devolver al catálogo ya filtrado por la línea del equipo.
-  // useSearchParams obliga a un <Suspense> arriba (lo pone /equipos/page.tsx);
-  // así la página sigue siendo estática y solo esta parte se hidrata.
+  // Dos formas de entrar filtrado, las dos las usan las fichas:
+  //   ?linea=compactacion            -> filtra por etapa de obra
+  //   ?cat=rodillos-compactadores    -> filtra por su etapa Y baja a la sección
+  // `cat` manda: de la categoría se deduce el grupo, así no pueden quedar
+  // desalineados. useSearchParams obliga a un <Suspense> arriba (lo pone
+  // /equipos/page.tsx); así la ruta sigue siendo estática.
   const searchParams = useSearchParams();
-  const grupoInicial = grupoPorId(searchParams.get("linea"))?.label ?? "all";
+  const catParam = searchParams.get("cat");
+  const grupoInicial =
+    (catParam ? grupoDeCategoria(catParam) : grupoPorId(searchParams.get("linea")))
+      ?.label ?? "all";
 
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState<string>(grupoInicial);
   const [filterOpen, setFilterOpen] = useState(false);
+
+  // Baja hasta la sección de la categoría.
+  //
+  // El retraso NO es cosmético: smooth-scroll.tsx hace scrollTo(0, immediate)
+  // en su efecto de ruta y, al ser el componente padre, ese efecto corre
+  // DESPUÉS de este. Sin esperar, nos pisa el scroll. 350ms es el mismo valor
+  // que usa smooth-scroll para su propio salto a anclas cross-page.
+  useEffect(() => {
+    if (!catParam) return;
+    const t = window.setTimeout(() => {
+      const el = document.getElementById(catParam);
+      if (!el) return;
+      const lenis = getLenis();
+      if (lenis) lenis.scrollTo(el, { offset: -96 });
+      else el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 350);
+    return () => window.clearTimeout(t);
+  }, [catParam]);
 
   const blocks = useMemo(() => {
     const q = norm(query.trim());
@@ -294,7 +318,13 @@ export function Catalog() {
           </div>
         ) : (
           blocks.map(({ cat, items }) => (
-            <div key={cat.slug} className="pt-12 first:pt-0 md:pt-16">
+            // id + scroll-mt: destino del ?cat=, con aire para que el título no
+            // quede tapado por la navbar fija.
+            <div
+              key={cat.slug}
+              id={cat.slug}
+              className="scroll-mt-28 pt-12 first:pt-0 md:pt-16"
+            >
               <div className="flex items-baseline justify-between gap-4 border-b border-neutral-200 pb-4">
                 <h2 className="font-sans text-2xl font-semibold tracking-normal text-neutral-950 md:text-3xl">
                   {cat.name}
